@@ -18,42 +18,6 @@ const router = express.Router();
 // BetterAuth
 // router.all("/auth/*", toNodeHandler(auth));
 
-// -----------------------------
-// METERED USAGE ENDPOINT
-// -----------------------------
-router.post('/meter-usage', verifyApiKey, async (req, res) => {
-    const { count = 1 } = req.body;
-    const totalCharge = count * PRICE_PER_REQUEST;
-
-    await db.collection('usage_logs').add({
-        userId: req.apiUserId,
-        count,
-        totalCharge,
-        createdAt: admin.firestore.FieldValue.serverTimestamp()
-    });
-
-    // Optional: enqueue for Stripe invoice creation later
-    res.json({ ok: true, billed: totalCharge });
-});
-
-// Middleware to check and charge balance
-async function requireFunds(req, res, next) {
-    const uid = req.apiUserId || req.user.id;
-    const userRef = db.collection('users').doc(uid);
-    const userDoc = await userRef.get();
-    const bal = userDoc.exists ? userDoc.data().balanceUSD || 0 : 0;
-    if (bal < PRICE_PER_REQUEST) return res.status(402).json({ error: 'Insufficient funds' });
-
-    await db.runTransaction(async (t) => {
-        const d = await t.get(userRef);
-        const b = d.data().balanceUSD || 0;
-        if (b < PRICE_PER_REQUEST) throw new Error('Insufficient funds');
-        t.update(userRef, { balanceUSD: b - PRICE_PER_REQUEST });
-    });
-
-    next();
-}
-
 makeGenericRouter({ pool, router, rulesModule, authField: 'auth' });
 
 // For local testing
