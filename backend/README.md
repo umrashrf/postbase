@@ -10,8 +10,9 @@ Follow the steps below to setup this boilerplate
 
 - [ ] Install PostgreSQL - Easiest is to use Docker (Don't forget to set PGDATA=/var/lib/postgresql/data/pgdata)
 - [ ] Setup BetterAuth - https://www.better-auth.com/docs/installation#create-database-tables
-- [ ] ```
-        cd postbase/backend 
-        npm install
-        npm run migrate:up
-    ```
+
+```
+cd postbase/backend 
+npm install
+npm run migrate:up
+```
