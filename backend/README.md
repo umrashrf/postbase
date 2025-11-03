@@ -16,3 +16,7 @@ cd postbase/backend
 npm install
 npm run migrate:up
 ```
+
+```
+node main.js
+```
