@@ -14,7 +14,7 @@ Mostly all code is ChatGPT generated but manually tested by human.
 - [ ] Firebase Storage Replacement
 - [ ] Firebase Functions Replacement
 
-### Done
+### In Progress
 - [ ] Testing
 
 ### Done
