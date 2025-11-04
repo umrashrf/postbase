@@ -11,7 +11,7 @@ Brand new project launched 02 Nov 2025, this is boiler plate but working! Expect
 Mostly all code is ChatGPT generated but manually tested by human.
 
 ### Todo
-- [ ] Firebase Storage Replacement
+- [ ] Firebase Storage Replacement (HTTPS Based Upload)
 - [ ] Firebase Functions Replacement
 
 ### In Progress
@@ -20,6 +20,7 @@ Mostly all code is ChatGPT generated but manually tested by human.
 ### Done
 - [x] Firebase Authentication Replacement
 - [x] Firebase Firestore Replacement
+- [x] Firebase Storage Replacement (Filebased Only)
 
 ## License 
 
