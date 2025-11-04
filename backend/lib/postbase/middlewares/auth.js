@@ -13,7 +13,7 @@ export function authMiddleware(pool) {
 
             // Lookup session in database
             const sql = `
-                SELECT s.*, u.id AS user_id
+                SELECT s.*, u.id AS user_id, u.email, u.name
                 FROM "session" s
                 JOIN "user" u ON u.id = s."userId"
                 WHERE s.token = $1
@@ -38,6 +38,12 @@ export function authMiddleware(pool) {
                 session_id: session.id,
                 expires_at: session.expires_at,
                 token,
+            };
+
+            req.user = {
+                id: String(session.user_id),
+                email: session.email,
+                name: session.name,
             };
 
             next();

@@ -1,0 +1,248 @@
+import { randomUUID } from 'crypto';
+import { runQuery } from './db.js';
+
+/* ------------------------------------------------------------------ */
+/*  Firestore-like Helpers                                             */
+/* ------------------------------------------------------------------ */
+
+export const Timestamp = {
+    now: () => ({ _type: 'timestamp', iso: new Date().toISOString() }),
+    fromDate: (d) => ({ _type: 'timestamp', iso: d.toISOString() }),
+};
+
+export const FieldValue = {
+    increment: (by = 1) => ({ _op: 'increment', by }),
+    serverTimestamp: () => ({ _op: 'serverTimestamp' }),
+};
+
+export const FieldPath = (path) => ({ _fieldPath: path });
+export const documentId = (id) => ({ _documentId: id });
+
+/* ------------------------------------------------------------------ */
+/*  Postbase Admin Client (Firestore-like for Postgres JSONB)          */
+/* ------------------------------------------------------------------ */
+
+export function makePostbaseAdminClient({ pool }) {
+    const ALLOWED_OPS = new Set(['==', '!=', '<', '<=', '>', '>=', 'LIKE', 'ILIKE', 'IN']);
+
+    // === WHERE builder ===
+    function buildWhere(filters = []) {
+        const whereClauses = [];
+        const params = [];
+        let idx = 1;
+        for (const f of filters) {
+            const { field, op, value } = f;
+            if (!ALLOWED_OPS.has(op)) throw new Error(`Invalid operator: ${op}`);
+            if (op === 'IN') {
+                if (!Array.isArray(value) || value.length === 0)
+                    throw new Error('IN requires non-empty array');
+                const placeholders = value.map(() => `$${idx++}`);
+                params.push(...value);
+                whereClauses.push(`data->>'${field}' IN (${placeholders.join(',')})`);
+            } else {
+                params.push(value);
+                whereClauses.push(`data->>'${field}' ${op.replace('==', '=')} $${idx++}`);
+            }
+        }
+        return { whereSql: whereClauses.length ? `WHERE ${whereClauses.join(' AND ')}` : '', params };
+    }
+
+    // === ORDER builder ===
+    function buildOrder(order = []) {
+        if (!order.length) return '';
+        const parts = order.map(({ field, dir }) =>
+            `data->>'${field}' ${dir?.toLowerCase() === 'desc' ? 'DESC' : 'ASC'}`
+        );
+        return parts.length ? `ORDER BY ${parts.join(', ')}` : '';
+    }
+
+    // === Apply Firestore-like FieldValue logic ===
+    function applyFieldValues(target, updates) {
+        const now = new Date().toISOString();
+        const result = { ...target };
+
+        for (const [key, val] of Object.entries(updates)) {
+            if (val && typeof val === 'object') {
+                if (val._op === 'increment') {
+                    const prev = Number(result[key] || 0);
+                    result[key] = prev + val.by;
+                } else if (val._op === 'serverTimestamp') {
+                    result[key] = now;
+                } else if (val._type === 'timestamp') {
+                    result[key] = val.iso;
+                } else {
+                    result[key] = val;
+                }
+            } else {
+                result[key] = val;
+            }
+        }
+
+        return result;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  Document Reference                                                 */
+    /* ------------------------------------------------------------------ */
+    class DocumentRef {
+        constructor(table, id) {
+            this.table = table;
+            this.id = id;
+        }
+
+        async get(client = pool) {
+            const sql = `SELECT id, data FROM "${this.table}" WHERE id=$1 LIMIT 1`;
+            const result = await runQuery(client, sql, [this.id]);
+            if (!result.rowCount) return null;
+            const row = result.rows[0];
+            return { id: row.id, ...row.data };
+        }
+
+        async set(data, opts = {}, client = pool) {
+            const existing = await this.get(client);
+            const finalData = opts.merge
+                ? applyFieldValues(existing || {}, data)
+                : applyFieldValues({}, data);
+
+            const sql = `
+        INSERT INTO "${this.table}" (id, data)
+        VALUES ($1, $2)
+        ON CONFLICT (id)
+        DO UPDATE SET data = EXCLUDED.data, updated_at = now()
+        RETURNING id, data`;
+            const result = await runQuery(client, sql, [this.id, finalData]);
+            const row = result.rows[0];
+            return { id: row.id, ...row.data };
+        }
+
+        async update(partial, client = pool) {
+            const existing = await this.get(client);
+            if (!existing) return null;
+            const merged = applyFieldValues(existing, partial);
+            return await this.set(merged, { merge: true }, client);
+        }
+
+        async delete(client = pool) {
+            const sql = `DELETE FROM "${this.table}" WHERE id=$1 RETURNING id`;
+            const result = await runQuery(client, sql, [this.id]);
+            return result.rowCount ? result.rows[0].id : null;
+        }
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  Collection Reference                                               */
+    /* ------------------------------------------------------------------ */
+    class CollectionRef {
+        constructor(table) {
+            this.table = table;
+            this._filters = [];
+            this._order = [];
+            this._limit = null;
+            this._offset = null;
+        }
+
+        where(field, op, value) {
+            this._filters.push({ field, op, value });
+            return this;
+        }
+
+        orderBy(field, dir = 'asc') {
+            this._order.push({ field, dir });
+            return this;
+        }
+
+        limit(n) {
+            this._limit = n;
+            return this;
+        }
+
+        offset(n) {
+            this._offset = n;
+            return this;
+        }
+
+        doc(id) {
+            return new DocumentRef(this.table, id);
+        }
+
+        async add(data, client = pool) {
+            const id = randomUUID();
+            const prepared = applyFieldValues({}, data);
+            const sql = `
+        INSERT INTO "${this.table}" (id, data)
+        VALUES ($1, $2)
+        RETURNING id, data`;
+            const result = await runQuery(client, sql, [id, prepared]);
+            const row = result.rows[0];
+            return { id: row.id, ...row.data };
+        }
+
+        async getDocs(client = pool) {
+            const { whereSql, params } = buildWhere(this._filters);
+            const orderSql = buildOrder(this._order);
+            const limitSql = this._limit ? `LIMIT ${Number(this._limit)}` : '';
+            const offsetSql = this._offset ? `OFFSET ${Number(this._offset)}` : '';
+
+            const sql = `
+        SELECT id, data, created_at, updated_at
+        FROM "${this.table}"
+        ${whereSql} ${orderSql} ${limitSql} ${offsetSql}`;
+            const result = await runQuery(client, sql, params);
+            return result.rows.map(r => ({ id: r.id, ...r.data }));
+        }
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  Transaction Support (Firestore-style)                              */
+    /* ------------------------------------------------------------------ */
+    async function runTransaction(fn, client = pool) {
+        try {
+            await client.query('BEGIN');
+            const operations = [];
+
+            const tx = {
+                async get(ref) {
+                    return await ref.get(client);
+                },
+                set(ref, data, opts = {}) {
+                    operations.push(async () => {
+                        await ref.set(data, opts, client);
+                    });
+                },
+                update(ref, data) {
+                    operations.push(async () => {
+                        await ref.update(data, client);
+                    });
+                },
+                delete(ref) {
+                    operations.push(async () => {
+                        await ref.delete(client);
+                    });
+                },
+            };
+
+            await fn(tx); // Run user transaction function
+            for (const op of operations) await op(); // Execute all queued writes
+
+            await client.query('COMMIT');
+        } catch (err) {
+            await client.query('ROLLBACK');
+            throw err;
+        } finally {
+        }
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  Public API                                                         */
+    /* ------------------------------------------------------------------ */
+    return {
+        collection(name) {
+            return new CollectionRef(name);
+        },
+        runTransaction,
+        FieldValue,
+        Timestamp,
+        FieldPath,
+        documentId,
+    };
+}

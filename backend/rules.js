@@ -1,5 +1,5 @@
 // server/rules.js
-import { RuleHelpers as H } from './rulesEngine.js';
+import { RuleHelpers as H } from './lib/postbase/rulesEngine.js';
 
 /**
  * This ruleset mirrors your Firestore rules.
