@@ -20,7 +20,7 @@ cd postbase/backend
 npm install
 ```
 
-- [ ] Design or copy schema from backend/migrations/ and run migrations
+- [ ] Design or copy schema from backend/migrations/1762137399367_init_jsonb_schema.js and run migrations
 ```
 npm run migrate:up
 ```
