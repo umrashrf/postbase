@@ -18,6 +18,10 @@ docker run --name postgres -e POSTGRES_PASSWORD=yoursecretpassword -d -p 5432:54
 ```
 cd postbase/backend 
 npm install
+```
+
+- [ ] Design or copy schema from backend/migrations/ and run migrations
+```
 npm run migrate:up
 ```
 
