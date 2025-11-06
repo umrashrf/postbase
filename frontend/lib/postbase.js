@@ -47,16 +47,32 @@ class Database {
 }
 
 class CollectionReference {
-    constructor(db, name) {
+    constructor(db, name, parentPath = null) {
         this.db = db;
         this.name = name;
+        this.parentPath = parentPath; // e.g., "users/u1"
     }
+
+    /** Build full collection path */
+    get fullPath() {
+        return this.parentPath ? `${this.parentPath}/${this.name}` : this.name;
+    }
+
+    /** Return a DocumentReference inside this collection */
     doc(id) {
-        return new DocumentReference(this.db, this.name, id);
+        return new DocumentReference(this.db, this.name, id, this.parentPath);
     }
-    // addDoc -> POST /:table
+
+    /** Allow chaining subcollections under this collection — for convenience */
+    collection(subName) {
+        // Enables chaining like: db.collection('orgs').collection('users')
+        // Useful for root-level logical grouping (not subcollections of docs)
+        return new CollectionReference(this.db, subName, this.fullPath);
+    }
+
+    // POST /:collection
     async addDoc(data) {
-        const url = `${this.db.baseUrl}/${encodeURIComponent(this.name)}`;
+        const url = `${this.db.baseUrl}/${encodeURIComponent(this.fullPath)}`;
         const headers = await this.db.getHeaders();
         const res = await fetch(url, {
             method: 'POST',
@@ -66,9 +82,10 @@ class CollectionReference {
         const json = await toJsonOrThrow(res);
         return json.data;
     }
-    // getDocs(query) -> POST /:table/query
+
+    // POST /:collection/query
     async getDocs(query = {}) {
-        const url = `${this.db.baseUrl}/${encodeURIComponent(this.name)}/query`;
+        const url = `${this.db.baseUrl}/${encodeURIComponent(this.fullPath)}/query`;
         const headers = await this.db.getHeaders();
         const res = await fetch(url, {
             method: 'POST',
@@ -78,27 +95,41 @@ class CollectionReference {
         const json = await toJsonOrThrow(res);
         return json.data || [];
     }
-    // shorthand: where/query builder
+
     where(field, op, value) {
-        return new QueryBuilder(this.name).where(field, op, value);
+        return new QueryBuilder(this.fullPath).where(field, op, value);
     }
 }
 
 class DocumentReference {
-    constructor(db, collectionName, id) {
+    constructor(db, collectionName, id, parentPath = null) {
         this.db = db;
         this.collectionName = collectionName;
         this.id = id;
+        this.parentPath = parentPath;
     }
+
+    /** Full document path, e.g. "users/u1/posts/p2" */
+    get fullPath() {
+        const base = this.parentPath ? `${this.parentPath}/${this.collectionName}` : this.collectionName;
+        return `${base}/${this.id}`;
+    }
+
+    /** Allow chaining subcollections under this document */
+    collection(subName) {
+        return new CollectionReference(this.db, subName, this.fullPath);
+    }
+
     async get() {
-        const url = `${this.db.baseUrl}/${encodeURIComponent(this.collectionName)}/${encodeURIComponent(this.id)}`;
+        const url = `${this.db.baseUrl}/${encodeURIComponent(this.fullPath)}`;
         const headers = await this.db.getHeaders();
         const res = await fetch(url, { headers });
         const json = await toJsonOrThrow(res);
         return json.data;
     }
+
     async set(data) {
-        const url = `${this.db.baseUrl}/${encodeURIComponent(this.collectionName)}/${encodeURIComponent(this.id)}`;
+        const url = `${this.db.baseUrl}/${encodeURIComponent(this.fullPath)}`;
         const headers = await this.db.getHeaders();
         const res = await fetch(url, {
             method: 'PUT',
@@ -108,8 +139,9 @@ class DocumentReference {
         const json = await toJsonOrThrow(res);
         return json.data;
     }
+
     async update(data) {
-        const url = `${this.db.baseUrl}/${encodeURIComponent(this.collectionName)}/${encodeURIComponent(this.id)}`;
+        const url = `${this.db.baseUrl}/${encodeURIComponent(this.fullPath)}`;
         const headers = await this.db.getHeaders();
         const res = await fetch(url, {
             method: 'PATCH',
@@ -119,8 +151,9 @@ class DocumentReference {
         const json = await toJsonOrThrow(res);
         return json.data;
     }
+
     async delete() {
-        const url = `${this.db.baseUrl}/${encodeURIComponent(this.collectionName)}/${encodeURIComponent(this.id)}`;
+        const url = `${this.db.baseUrl}/${encodeURIComponent(this.fullPath)}`;
         const headers = await this.db.getHeaders();
         const res = await fetch(url, { method: 'DELETE', headers });
         const json = await toJsonOrThrow(res);
