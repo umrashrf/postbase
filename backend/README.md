@@ -25,6 +25,14 @@ npm install
 npm run migrate:up
 ```
 
+## Local (HTTP)
+
+```
+node local.js
+```
+
+## Production (HTTPS)
+
 ```
 node main.js
 ```
