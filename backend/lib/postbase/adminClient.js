@@ -85,14 +85,26 @@ export function makePostbaseAdminClient({ pool }) {
     /*  Document Reference                                                 */
     /* ------------------------------------------------------------------ */
     class DocumentRef {
-        constructor(table, id) {
+        constructor(table, id, parentPath = null) {
             this.table = table;
             this.id = id;
+            this.parentPath = parentPath; // e.g. "users/u1"
+        }
+
+        /** Build full document path (for chaining use only) */
+        get fullPath() {
+            const base = this.parentPath ? `${this.parentPath}/${this.table}` : this.table;
+            return `${base}/${this.id}`;
+        }
+
+        /** Allow chaining subcollections under this document */
+        collection(subName) {
+            return new CollectionRef(subName, this.fullPath);
         }
 
         async get(client = pool) {
             const sql = `SELECT id, data FROM "${this.table}" WHERE id=$1 LIMIT 1`;
-            const result = await runQuery(client, sql, [this.id]);
+            const result = await runQuery(client, [this.id]);
             if (!result.rowCount) return null;
             const row = result.rows[0];
             return { id: row.id, ...row.data };
@@ -105,11 +117,11 @@ export function makePostbaseAdminClient({ pool }) {
                 : applyFieldValues({}, data);
 
             const sql = `
-        INSERT INTO "${this.table}" (id, data)
-        VALUES ($1, $2)
-        ON CONFLICT (id)
-        DO UPDATE SET data = EXCLUDED.data, updated_at = now()
-        RETURNING id, data`;
+            INSERT INTO "${this.table}" (id, data)
+            VALUES ($1, $2)
+            ON CONFLICT (id)
+            DO UPDATE SET data = EXCLUDED.data, updated_at = now()
+            RETURNING id, data`;
             const result = await runQuery(client, sql, [this.id, finalData]);
             const row = result.rows[0];
             return { id: row.id, ...row.data };
@@ -133,12 +145,28 @@ export function makePostbaseAdminClient({ pool }) {
     /*  Collection Reference                                               */
     /* ------------------------------------------------------------------ */
     class CollectionRef {
-        constructor(table) {
+        constructor(table, parentPath = null) {
             this.table = table;
+            this.parentPath = parentPath; // e.g. "users/u1"
             this._filters = [];
             this._order = [];
             this._limit = null;
             this._offset = null;
+        }
+
+        /** Build full collection path (for chaining use only) */
+        get fullPath() {
+            return this.parentPath ? `${this.parentPath}/${this.table}` : this.table;
+        }
+
+        /** Return a DocumentRef in this collection */
+        doc(id) {
+            return new DocumentRef(this.table, id, this.parentPath);
+        }
+
+        /** Allow chaining subcollections under this collection */
+        collection(subName) {
+            return new CollectionRef(subName, this.fullPath);
         }
 
         where(field, op, value) {
@@ -161,17 +189,13 @@ export function makePostbaseAdminClient({ pool }) {
             return this;
         }
 
-        doc(id) {
-            return new DocumentRef(this.table, id);
-        }
-
         async add(data, client = pool) {
             const id = randomUUID();
             const prepared = applyFieldValues({}, data);
             const sql = `
-        INSERT INTO "${this.table}" (id, data)
-        VALUES ($1, $2)
-        RETURNING id, data`;
+            INSERT INTO "${this.table}" (id, data)
+            VALUES ($1, $2)
+            RETURNING id, data`;
             const result = await runQuery(client, sql, [id, prepared]);
             const row = result.rows[0];
             return { id: row.id, ...row.data };
@@ -184,9 +208,9 @@ export function makePostbaseAdminClient({ pool }) {
             const offsetSql = this._offset ? `OFFSET ${Number(this._offset)}` : '';
 
             const sql = `
-        SELECT id, data, created_at, updated_at
-        FROM "${this.table}"
-        ${whereSql} ${orderSql} ${limitSql} ${offsetSql}`;
+            SELECT id, data, created_at, updated_at
+            FROM "${this.table}"
+            ${whereSql} ${orderSql} ${limitSql} ${offsetSql}`;
             const result = await runQuery(client, sql, params);
             return result.rows.map(r => ({ id: r.id, ...r.data }));
         }
