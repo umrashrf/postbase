@@ -18,7 +18,7 @@ export const auth = betterAuth({
     //     },
     // },
     database: new Pool({
-        connectionString: process.env.POSTGRES_CONNECTION_STRING,
+        connectionString: process.env.DATABASE_URL,
     }),
     emailAndPassword: {
         enabled: true,

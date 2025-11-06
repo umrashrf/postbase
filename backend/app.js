@@ -11,7 +11,7 @@ import { createLocalStorage } from './postbase/local-storage.js';
 
 // Initialize DB pool using env variables
 const pool = createPool({
-    connectionString: process.env.POSTGRES_CONNECTION_STRING
+    connectionString: process.env.DATABASE_URL
 });
 
 // This is firestore alternative
