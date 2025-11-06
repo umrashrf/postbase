@@ -5,7 +5,7 @@
 ```
 brew install certbot
 cd nginx/letsencrypt
-certbot certonly --manual --preferred-challenges dns-01 -d your_website.com -d *.your_website.com
+sudo certbot certonly --manual --preferred-challenges dns-01 -d your_website.com -d www.your_website.com
 ```
 
 ## Enable Nginx
