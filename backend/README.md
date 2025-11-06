@@ -25,6 +25,8 @@ npm install
 npm run migrate:up
 ```
 
+Learn more from https://synvinkel.org/notes/node-postgres-migrations
+
 ## Local (HTTP)
 
 ```
