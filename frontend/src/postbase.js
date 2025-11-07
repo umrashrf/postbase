@@ -1,5 +1,6 @@
 import { getSession } from "./auth";
-import { getDB } from "./lib/postbase";
+import { getDB } from "../lib/postbase/db";
+import { createClientStorage } from "../lib/postbase/storage";
 
 async function getBetterAuthToken() {
     const { data } = await getSession();
@@ -10,6 +11,11 @@ async function getBetterAuthToken() {
 }
 
 export const db = getDB({
+    baseUrl: import.meta.env.VITE_API_BASE,
+    getAuthToken: getBetterAuthToken,
+});
+
+export const storage = createClientStorage({
     baseUrl: import.meta.env.VITE_API_BASE,
     getAuthToken: getBetterAuthToken,
 });

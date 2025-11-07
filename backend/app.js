@@ -4,10 +4,14 @@ import { toNodeHandler } from "better-auth/node";
 
 import { createPool } from './lib/postbase/db.js';
 import { makeGenericRouter } from './lib/postbase/genericRouter.js';
-import rulesModule from './rules.js';
+import rulesModuleDB from './postbase_db_rules.js';
+import rulesModuleStorage from './postbase_storage_rules.js';
 import { authMiddleware } from './lib/postbase/middlewares/auth.js';
 import { makePostbaseAdminClient } from './postbase/adminClient.js';
 import { createLocalStorage } from './postbase/local-storage.js';
+
+const UPLOAD_DESTINATION = '/absolute/path/to/where/user/uploads/will/be/stored';
+const UPLOAD_PUBLIC_URL = 'https://www.yourwebsite.com/uploads';
 
 // Initialize DB pool using env variables
 const pool = createPool({
@@ -18,9 +22,9 @@ const pool = createPool({
 const db = makePostbaseAdminClient({ pool });
 
 // This is firebase storage alternative
-const storage = createLocalStorage(
-    '/absolute/path/to/where/user/uploads/will/be/stored',
-    'https://www.yourwebsite.com/uploads' // this is needed for making public urls
+const bucket = createLocalStorage(
+    UPLOAD_DESTINATION,
+    UPLOAD_PUBLIC_URL // this is needed for making public urls
 ).bucket();
 
 export const app = express();
@@ -29,7 +33,9 @@ const router = express.Router();
 // BetterAuth
 // router.all("/auth/*", toNodeHandler(auth));
 
-makeGenericRouter({ pool, router, rulesModule, authField: 'auth' });
+makeGenericRouter({ pool, router, rulesModule: rulesModuleDB, authField: 'auth' });
+
+router.use('/storage', createStorageRouter(UPLOAD_DESTINATION, bucket, rulesModuleStorage));
 
 // For local testing
 // app.use(cors({
