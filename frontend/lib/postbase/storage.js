@@ -1,11 +1,18 @@
 // client-storage-sdk.js
 // Minimal Firebase-like client storage SDK for uploading files to an Express backend.
-//
-// Usage:
 // const storage = createClientStorage('https://api.example.com', () => authToken);
 // const ref = storage.ref('users/123/profile.jpg');
+// // Option 1: Firebase-style callback usage
 // const task = ref.put(file, { contentType: 'image/jpeg' });
-// task.on(firebase.storage.TaskEvent.STATE_CHANGED, snapshot => { ... }, error => { ... }, () => { ... });
+// task.on(TaskEvent.STATE_CHANGED, snap => console.log(snap));
+// // Option 2: Async/await usage (no .on() needed)
+// try {
+//     const snapshot = await ref.put(file, { contentType: 'image/jpeg' });
+//     const url = await snapshot.ref.getDownloadURL();
+//     console.log('Uploaded! URL:', url);
+// } catch (err) {
+//     console.error('Upload failed:', err);
+// }
 
 export const TaskEvent = {
     STATE_CHANGED: 'state_changed'
@@ -36,24 +43,49 @@ class UploadTask {
         this.baseUrl = baseUrl.replace(/\/+$/, '');
         this.getAuthToken = getAuthToken;
         this._xhr = null;
-        this._listeners = []; // to support .on with (snapshotCallback, errorCb, completeCb)
+        this._listeners = [];
         this._state = TaskState.PAUSED;
         this._bytesTransferred = 0;
         this._totalBytes = file.size;
         this._serverResponse = null;
         this._error = null;
         this._aborted = false;
-        // start immediately
+
+        // --- Promise support ---
+        this._promise = new Promise((resolve, reject) => {
+            this._resolve = resolve;
+            this._reject = reject;
+        });
+
+        // Start immediately
         this._start();
     }
 
+    // Allow awaiting directly (promise-like)
+    then(onFulfilled, onRejected) {
+        return this._promise.then(onFulfilled, onRejected);
+    }
+    catch(onRejected) {
+        return this._promise.catch(onRejected);
+    }
+    finally(onFinally) {
+        return this._promise.finally(onFinally);
+    }
+
     _emitSnapshot() {
-        const snap = new UploadSnapshot(this._bytesTransferred, this._totalBytes, this._state, this.ref, this._serverResponse);
+        const snap = new UploadSnapshot(
+            this._bytesTransferred,
+            this._totalBytes,
+            this._state,
+            this.ref,
+            this._serverResponse
+        );
         for (const l of this._listeners) {
             if (typeof l.snapshot === 'function') {
                 try { l.snapshot(snap); } catch (e) { console.error(e); }
             }
         }
+        return snap;
     }
 
     _emitError(err) {
@@ -63,6 +95,8 @@ class UploadTask {
                 try { l.error(err); } catch (e) { console.error(e); }
             }
         }
+        // reject the awaitable promise
+        if (this._reject) this._reject(err);
     }
 
     _emitComplete() {
@@ -71,6 +105,15 @@ class UploadTask {
                 try { l.complete(); } catch (e) { console.error(e); }
             }
         }
+        // resolve the awaitable promise with final snapshot
+        const snap = new UploadSnapshot(
+            this._bytesTransferred,
+            this._totalBytes,
+            this._state,
+            this.ref,
+            this._serverResponse
+        );
+        if (this._resolve) this._resolve(snap);
     }
 
     on(event, snapshotCb, errorCb, completeCb) {
