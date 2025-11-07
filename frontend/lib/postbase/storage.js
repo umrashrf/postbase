@@ -209,7 +209,6 @@ class UploadTask {
 
 export class StorageRef {
     constructor(fullPath, baseUrl, getAuthToken) {
-        // fullPath: e.g., 'images/mountains.jpg'
         this.fullPath = fullPath.replace(/^\/+/, '');
         this.baseUrl = baseUrl;
         this.getAuthToken = getAuthToken;
@@ -217,14 +216,33 @@ export class StorageRef {
 
     put(file, metadata) {
         const task = new UploadTask(this, file, metadata, this.baseUrl, this.getAuthToken);
-        // return object shaped like firebase: uploadTask and uploadTask.snapshot.ref.getDownloadURL()
-        // We'll expose getDownloadURL on uploadTask.snapshotRefGetDownloadURL
+
+        // still allow event-based tracking
         task.snapshot = {
             ref: {
                 getDownloadURL: () => task.snapshotRefGetDownloadURL()
             }
         };
-        return task;
+
+        // Wrap the task in a Promise that resolves when upload completes
+        return new Promise((resolve, reject) => {
+            task.on(
+                TaskEvent.STATE_CHANGED,
+                null,
+                (err) => reject(err),
+                () => {
+                    // when complete, resolve with final snapshot
+                    const snap = new UploadSnapshot(
+                        task._bytesTransferred,
+                        task._totalBytes,
+                        task._state,
+                        task.ref,
+                        task._serverResponse
+                    );
+                    resolve(snap);
+                }
+            );
+        });
     }
 }
 
