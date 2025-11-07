@@ -23,6 +23,17 @@ export const auth = betterAuth({
     emailAndPassword: {
         enabled: true,
     },
+    // emailVerification: {
+    //     sendVerificationEmail: async ({ user, url }) => {
+    //         // Send email using third-party APIs or your own SMTP server
+    //         await sendEmail({
+    //             to: user.email,
+    //             subject: "Verify your email address",
+    //             text: `Click the link to verify your email: ${url}`,
+    //         });
+    //     },
+    //     sendOnSignIn: true,
+    // },
     socialProviders: {
         // Enable following for Sign in with Google
         // google: {
