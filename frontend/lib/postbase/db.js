@@ -128,13 +128,26 @@ class DocumentReference {
         return json.data;
     }
 
-    async set(data) {
+    async set(data, opts = {}) {
         const url = `${this.db.baseUrl}/${encodeURIComponent(this.fullPath)}`;
         const headers = await this.db.getHeaders();
+
+        // If merge=true, fetch existing data first and merge locally
+        let finalData = data;
+        if (opts.merge) {
+            try {
+                const existing = await this.get();
+                finalData = { ...(existing || {}), ...data };
+            } catch (err) {
+                // If doc doesn't exist, just create it
+                finalData = data;
+            }
+        }
+
         const res = await fetch(url, {
             method: 'PUT',
             headers: { 'content-type': 'application/json', ...headers },
-            body: JSON.stringify(data),
+            body: JSON.stringify(finalData),
         });
         const json = await toJsonOrThrow(res);
         return json.data;
