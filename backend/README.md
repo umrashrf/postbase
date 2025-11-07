@@ -2,7 +2,7 @@
 
 Custom backend code written in Node.js and Express.js to use Firebase like API against PostgreSQL. 
 
-Also support Firebase like Rule based security. See backend/rules.js
+Also support Firebase like Rule based security. See backend/postbase_db_rules.js
 
 Follow the steps below to setup this boilerplate
 
