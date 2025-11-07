@@ -3,12 +3,13 @@ import cors from 'cors';
 import { toNodeHandler } from "better-auth/node";
 
 import { createPool } from './lib/postbase/db.js';
+import { authMiddleware } from './lib/postbase/middlewares/auth.js';
 import { makeGenericRouter } from './lib/postbase/genericRouter.js';
+import { createStorageRouter } from './lib/postbase/storage.js';
+import { createLocalStorage } from './postbase/local-storage.js';
+import { makePostbaseAdminClient } from './postbase/adminClient.js';
 import rulesModuleDB from './postbase_db_rules.js';
 import rulesModuleStorage from './postbase_storage_rules.js';
-import { authMiddleware } from './lib/postbase/middlewares/auth.js';
-import { makePostbaseAdminClient } from './postbase/adminClient.js';
-import { createLocalStorage } from './postbase/local-storage.js';
 
 const UPLOAD_DESTINATION = '/absolute/path/to/where/user/uploads/will/be/stored';
 const UPLOAD_PUBLIC_URL = 'https://www.yourwebsite.com/uploads';
