@@ -1,5 +1,6 @@
-import { betterAuth } from "better-auth";
 import { Pool } from "pg";
+import { betterAuth } from "better-auth";
+//import { phoneNumber } from "better-auth/plugins"
 
 export const auth = betterAuth({
     // Following is only needed for local testing
@@ -55,4 +56,11 @@ export const auth = betterAuth({
             },
         }
     },
+    plugins: [
+        // phoneNumber({
+        //     sendOTP: ({ phoneNumber, code }, request) => {
+        //         // Implement sending OTP code via SMS
+        //     }
+        // })
+    ]
 });
