@@ -108,7 +108,13 @@ class CollectionReference {
             body: JSON.stringify(query)
         });
         const json = await toJsonOrThrow(res);
-        return json.data || [];
+        const docs = (json.data || []).map((doc) => {
+            const data = deserializeRefs(this.db, doc.data || {});
+            data.id = doc.id;
+            data._path = `${this.fullPath}/${doc.id}`;
+            return data;
+        });
+        return docs;
     }
 
     where(field, op, value) {
@@ -190,7 +196,10 @@ class DocumentReference {
         const headers = await this.db.getHeaders();
         const res = await fetch(url, { headers });
         const json = await toJsonOrThrow(res);
-        return deserializeRefs(this.db, json.data);
+        const data = deserializeRefs(this.db, json.data || {});
+        data.id = this.id;
+        data._path = this.fullPath;
+        return data;
     }
 
     async set(data, opts = {}) {
