@@ -1,10 +1,25 @@
-// Minimal client SDK for the generic CRUD API.
-// Usage example:
+// // Minimal client SDK for the generic CRUD API.
+// // Usage example:
 //   import { getDB } from './postbase.js';
 //   const db = getDB({ baseUrl: 'https://api.example.com/api' });
 //   const posts = db.collection('posts');
 //   await posts.addDoc({ title: 'hi' });
 //   const doc = await posts.doc('123').get();
+//
+// // You can also use references
+// const userRef = db.collection('users').doc('alovelace');
+// await userRef.set({ name: 'Ada Lovelace' });
+
+// await db.collection('reviews').doc('r1').set({
+//   rating: 5,
+//   reviewer: userRef
+// });
+
+// const review = await db.collection('reviews').doc('r1').get();
+
+// console.log(review.reviewer instanceof DocumentReference); // ✅ true
+// const user = await review.reviewer.get();
+// console.log(user.name); // "Ada Lovelace"
 
 function toJsonOrThrow(res) {
     if (!res.ok) {
@@ -77,7 +92,7 @@ class CollectionReference {
         const res = await fetch(url, {
             method: 'POST',
             headers: { 'content-type': 'application/json', ...headers },
-            body: JSON.stringify(data)
+            body: JSON.stringify(serializeRefs(data))
         });
         const json = await toJsonOrThrow(res);
         return json.data;
@@ -99,6 +114,56 @@ class CollectionReference {
     where(field, op, value) {
         return new QueryBuilder(this.fullPath).where(field, op, value);
     }
+}
+
+/** 
+ * Recursively convert DocumentReference instances to JSON-safe { _type: 'ref', path } objects
+ */
+function serializeRefs(obj) {
+    if (obj instanceof DocumentReference) {
+        return { _type: 'ref', path: obj.fullPath };
+    }
+    if (Array.isArray(obj)) {
+        return obj.map(serializeRefs);
+    }
+    if (obj && typeof obj === 'object') {
+        const out = {};
+        for (const [k, v] of Object.entries(obj)) {
+            out[k] = serializeRefs(v);
+        }
+        return out;
+    }
+    return obj;
+}
+
+/**
+ * Recursively restore { _type:'ref', path } objects back to DocumentReference instances.
+ */
+function deserializeRefs(db, obj) {
+    if (Array.isArray(obj)) {
+        return obj.map((v) => deserializeRefs(db, v));
+    }
+    if (obj && typeof obj === 'object') {
+        if (obj._type === 'ref' && typeof obj.path === 'string') {
+            // Convert "users/alovelace" → collection('users').doc('alovelace')
+            const parts = obj.path.split('/');
+            if (parts.length % 2 === 0) {
+                let ref = db.collection(parts[0]).doc(parts[1]);
+                for (let i = 2; i < parts.length; i += 2) {
+                    ref = ref.collection(parts[i]).doc(parts[i + 1]);
+                }
+                return ref;
+            }
+            // fallback: return plain object if malformed
+            return obj;
+        }
+        const out = {};
+        for (const [k, v] of Object.entries(obj)) {
+            out[k] = deserializeRefs(db, v);
+        }
+        return out;
+    }
+    return obj;
 }
 
 class DocumentReference {
@@ -125,7 +190,7 @@ class DocumentReference {
         const headers = await this.db.getHeaders();
         const res = await fetch(url, { headers });
         const json = await toJsonOrThrow(res);
-        return json.data;
+        return deserializeRefs(this.db, json.data);
     }
 
     async set(data, opts = {}) {
@@ -147,7 +212,7 @@ class DocumentReference {
         const res = await fetch(url, {
             method: 'PUT',
             headers: { 'content-type': 'application/json', ...headers },
-            body: JSON.stringify(finalData),
+            body: JSON.stringify(serializeRefs(finalData)),
         });
         const json = await toJsonOrThrow(res);
         return json.data;
@@ -159,7 +224,7 @@ class DocumentReference {
         const res = await fetch(url, {
             method: 'PATCH',
             headers: { 'content-type': 'application/json', ...headers },
-            body: JSON.stringify(data),
+            body: JSON.stringify(serializeRefs(data)),
         });
         const json = await toJsonOrThrow(res);
         return json.data;
