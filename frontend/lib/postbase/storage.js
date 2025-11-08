@@ -231,7 +231,6 @@ export class StorageRef {
                 null,
                 (err) => reject(err),
                 () => {
-                    // when complete, resolve with final snapshot
                     const snap = new UploadSnapshot(
                         task._bytesTransferred,
                         task._totalBytes,
@@ -244,10 +243,45 @@ export class StorageRef {
             );
         });
     }
+
+    delete() {
+        const url = `${this.baseUrl}/delete?path=${encodeURIComponent(this.fullPath)}`;
+        const token = this.getAuthToken && this.getAuthToken();
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        return fetch(url, { method: 'DELETE', headers }).then(res => {
+            if (!res.ok) throw new Error(`Failed to delete file: ${res.status}`);
+            return res.json().catch(() => ({}));
+        });
+    }
 }
 
 export function createClientStorage(baseUrl, getAuthToken = null) {
+    baseUrl = baseUrl.replace(/\/+$/, '');
     return {
-        ref: (path) => new StorageRef(path, baseUrl, getAuthToken)
+        ref: (path) => new StorageRef(path, baseUrl, getAuthToken),
+
+        refFromFile: (fileUrl) => {
+            if (typeof fileUrl !== 'string' || !/^https?:\/\//i.test(fileUrl)) {
+                throw new Error('refFromFile() expects a valid HTTP or HTTPS URL');
+            }
+
+            try {
+                const parsed = new URL(fileUrl);
+                // Extract path after `/files/` or fallback to pathname
+                let path = parsed.pathname;
+                // Common convention: https://api.example.com/files/<path>
+                const filesIdx = path.indexOf('/files/');
+                if (filesIdx >= 0) {
+                    path = path.slice(filesIdx + '/files/'.length);
+                } else {
+                    // Remove leading slash if not using /files/ convention
+                    path = path.replace(/^\/+/, '');
+                }
+                return new StorageRef(path, baseUrl, getAuthToken);
+            } catch (err) {
+                throw new Error(`Invalid URL: ${fileUrl}`);
+            }
+        }
     };
 }
