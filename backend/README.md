@@ -10,7 +10,11 @@ Follow the steps below to setup this boilerplate
 
 - [ ] Install PostgreSQL - Easiest is to use Docker (Don't forget to set PGDATA=/var/lib/postgresql/data/pgdata)
 ```
-docker run --name postgres -e POSTGRES_PASSWORD=yoursecretpassword -d -p 5432:5432 -e PGDATA=/var/lib/postgresql/data postgres
+docker run --name postgres -d \
+    -p 5432:5432 \
+    -e POSTGRES_PASSWORD=yoursecretpassword \
+    -e PGDATA=/var/lib/postgresql/data \
+    postgres
 ```
 - [ ] Setup BetterAuth - https://www.better-auth.com/docs/installation#create-database-tables
 - [ ] Move template.env to .env and set all the environment variables
