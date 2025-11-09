@@ -25,6 +25,8 @@ sudo certbot certonly --manual --preferred-challenges dns-01 -d your_website.com
 
 ## Enable Nginx
 
+First, you must edit this file /Users/your_username/your_website/nginx/www.your_website.com.conf and fix names, paths, etc
+
 ```
 cp /Users/your_username/your_website/nginx/www.your_website.com.conf /opt/homebrew/etc/nginx/services/
 
