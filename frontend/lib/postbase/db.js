@@ -3,7 +3,7 @@
 //   import { getDB } from './postbase.js';
 //   const db = getDB({ baseUrl: 'https://api.example.com/api' });
 //   const posts = db.collection('posts');
-//   await posts.addDoc({ title: 'hi' });
+//   await posts.add({ title: 'hi' });
 //   const doc = await posts.doc('123').get();
 //
 // // You can also use references
@@ -80,7 +80,7 @@ class CollectionReference {
         return new CollectionReference(this.db, subName, this.fullPath);
     }
 
-    async addDoc(data) {
+    async add(data) {
         const url = `${this.db.baseUrl}/${encodeURIComponent(this.fullPath)}`;
         const headers = await this.db.getHeaders();
         const res = await fetch(url, {
