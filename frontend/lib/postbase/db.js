@@ -94,7 +94,14 @@ class CollectionReference {
 
     /** Directly get all docs (no filters) */
     async get() {
-        return new QueryBuilder(this).get();
+        const query = new QueryBuilder(this);
+        const docs = await query.get();
+        // If there are no query filters, wrap in QuerySnapshot
+        if (query._filters.length === 0 && query._order.length === 0 && !query._limit) {
+            return new QuerySnapshot(docs);
+        }
+        // Otherwise, return array of DocumentSnapshot as before
+        return docs;
     }
 
     /** Start a query builder chain */
@@ -275,6 +282,25 @@ export function query(collectionRef, ...clauses) {
         if (c instanceof QueryBuilder) q.mergeFrom(c);
     }
     return q;
+}
+
+class QuerySnapshot {
+    constructor(docs) {
+        this.docs = docs; // array of DocumentSnapshot
+    }
+
+    // Optional helper like Firestore
+    forEach(callback) {
+        this.docs.forEach(callback);
+    }
+
+    get empty() {
+        return this.docs.length === 0;
+    }
+
+    get size() {
+        return this.docs.length;
+    }
 }
 
 class QueryBuilder {
