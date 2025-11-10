@@ -1,5 +1,3 @@
-import { createAuthClient as createBetterAuthClient } from "better-auth/client";
-
 /**
  * A wrapper around better-auth/client's createAuthClient
  * that adds Firebase-like helpers:
@@ -7,9 +5,7 @@ import { createAuthClient as createBetterAuthClient } from "better-auth/client";
  * - getIdToken()
  * - currentUser
  */
-export function createAuthClient(options) {
-    const auth = createBetterAuthClient(options);
-
+export function createAuthClient(auth) {
     // Track current user state
     let currentUser = null;
     const subscribers = new Set();
