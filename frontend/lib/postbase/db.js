@@ -406,13 +406,12 @@ class QueryBuilder {
         return docs;
     }
 
-    onSnapshot(callback) {
+    onSnapshot(callback, errorCallback) {
         const wsUrl = this.collectionRef.db.baseUrl
             .replace(/^http/, 'ws')
             + `/${encodeURIComponent(this.collectionRef.fullPath)}/stream`;
 
         const ws = new WebSocket(wsUrl);
-        let ready = false;
 
         ws.onopen = () => {
             const queryBody = this.build();
@@ -420,21 +419,33 @@ class QueryBuilder {
         };
 
         ws.onmessage = (event) => {
-            const msg = JSON.parse(event.data);
-            if (msg.type === 'init' || msg.type === 'change') {
-                const docs = (msg.data || []).map(doc => {
-                    const data = deserializeRefs(this.collectionRef.db, doc);
-                    data.id = doc.id;
-                    return data;
-                });
-                callback(docs);
+            try {
+                const msg = JSON.parse(event.data);
+                if (msg.type === 'init' || msg.type === 'change') {
+                    const docs = (msg.data || []).map(doc => {
+                        const data = deserializeRefs(this.collectionRef.db, doc.data || doc);
+                        return new DocumentSnapshot(
+                            doc.id,
+                            data,
+                            `${this.collectionRef.fullPath}/${doc.id}`,
+                            this.collectionRef.db
+                        );
+                    });
+                    callback(new QuerySnapshot(docs));
+                }
+            } catch (err) {
+                if (typeof errorCallback === 'function') errorCallback(err);
+                else console.error('onSnapshot parsing error:', err);
             }
         };
 
-        ws.onerror = (err) => console.error('onSnapshot websocket error', err);
-        return () => ws.close();
-    }
+        ws.onerror = (err) => {
+            if (typeof errorCallback === 'function') errorCallback(err);
+            else console.error('onSnapshot websocket error:', err);
+        };
 
+        return () => ws.close(); // return unsubscribe function
+    }
 
     mergeFrom(other) {
         this._filters.push(...(other._filters || []));
