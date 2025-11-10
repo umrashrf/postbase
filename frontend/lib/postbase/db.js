@@ -68,24 +68,18 @@ class CollectionReference {
         this.parentPath = parentPath; // e.g., "users/u1"
     }
 
-    /** Build full collection path */
     get fullPath() {
         return this.parentPath ? `${this.parentPath}/${this.name}` : this.name;
     }
 
-    /** Return a DocumentReference inside this collection */
     doc(id) {
         return new DocumentReference(this.db, this.name, id, this.parentPath);
     }
 
-    /** Allow chaining subcollections under this collection — for convenience */
     collection(subName) {
-        // Enables chaining like: db.collection('orgs').collection('users')
-        // Useful for root-level logical grouping (not subcollections of docs)
         return new CollectionReference(this.db, subName, this.fullPath);
     }
 
-    // POST /:collection
     async addDoc(data) {
         const url = `${this.db.baseUrl}/${encodeURIComponent(this.fullPath)}`;
         const headers = await this.db.getHeaders();
@@ -98,29 +92,26 @@ class CollectionReference {
         return json.data;
     }
 
-    // POST /:collection/query
-    async getDocs(query = {}) {
-        const url = `${this.db.baseUrl}/${encodeURIComponent(this.fullPath)}/query`;
-        const headers = await this.db.getHeaders();
-        const res = await fetch(url, {
-            method: 'POST',
-            headers: { 'content-type': 'application/json', ...headers },
-            body: JSON.stringify(query)
-        });
-        const json = await toJsonOrThrow(res);
-        const docs = (json.data || []).map((doc) => {
-            const data = deserializeRefs(this.db, doc.data || {});
-            data.id = doc.id;
-            data._path = `${this.fullPath}/${doc.id}`;
-            return data;
-        });
-        return docs;
+    /** Directly get all docs (no filters) */
+    async get() {
+        return new QueryBuilder(this).get();
     }
 
+    /** Start a query builder chain */
     where(field, op, value) {
-        return new QueryBuilder(this.fullPath).where(field, op, value);
+        return new QueryBuilder(this).where(field, op, value);
+    }
+
+    /** Optional syntactic sugar — allow orderBy/limit without where() */
+    orderBy(field, dir = 'asc') {
+        return new QueryBuilder(this).orderBy(field, dir);
+    }
+
+    limit(n) {
+        return new QueryBuilder(this).limit(n);
     }
 }
+
 
 /** 
  * Recursively convert DocumentReference instances to JSON-safe { _type: 'ref', path } objects
@@ -259,36 +250,148 @@ export function query(collectionRef, ...clauses) {
 }
 
 class QueryBuilder {
-    constructor(collectionNameOrRef) {
-        this.collection = (collectionNameOrRef && collectionNameOrRef.name) || collectionNameOrRef;
+    constructor(collectionRef) {
+        this.collectionRef = collectionRef;
         this._filters = [];
         this._order = [];
         this._limit = undefined;
         this._offset = undefined;
+
+        // New cursor fields
+        this._startAt = undefined;
+        this._startAfter = undefined;
+        this._endAt = undefined;
+        this._endBefore = undefined;
     }
+
     where(field, op, value) {
         this._filters.push({ field, op, value });
         return this;
     }
+
     orderBy(field, dir = 'asc') {
         this._order.push({ field, dir });
         return this;
     }
-    limit(n) { this._limit = n; return this; }
-    offset(n) { this._offset = n; return this; }
+
+    limit(n) {
+        this._limit = n;
+        return this;
+    }
+
+    offset(n) {
+        this._offset = n;
+        return this;
+    }
+
+    // 🔽 Pagination methods (Firestore-like)
+    startAt(cursor) {
+        this._startAt = this._normalizeCursor(cursor);
+        return this;
+    }
+
+    startAfter(cursor) {
+        this._startAfter = this._normalizeCursor(cursor);
+        return this;
+    }
+
+    endAt(cursor) {
+        this._endAt = this._normalizeCursor(cursor);
+        return this;
+    }
+
+    endBefore(cursor) {
+        this._endBefore = this._normalizeCursor(cursor);
+        return this;
+    }
+
+    // Internal helper — Firestore allows passing either value or doc snapshot
+    _normalizeCursor(cursor) {
+        if (!cursor) return null;
+        if (typeof cursor === 'object' && cursor.id) {
+            // Likely a document snapshot or data with an id
+            return { _type: 'cursorRef', path: cursor._path || `${this.collectionRef.fullPath}/${cursor.id}` };
+        }
+        // For raw scalar values (like numeric sort fields)
+        return cursor;
+    }
+
     build() {
         const out = {};
         if (this._filters.length) out.filters = this._filters;
         if (this._order.length) out.order = this._order;
         if (typeof this._limit !== 'undefined') out.limit = this._limit;
         if (typeof this._offset !== 'undefined') out.offset = this._offset;
+
+        // Include cursors if defined
+        if (this._startAt !== undefined) out.startAt = this._startAt;
+        if (this._startAfter !== undefined) out.startAfter = this._startAfter;
+        if (this._endAt !== undefined) out.endAt = this._endAt;
+        if (this._endBefore !== undefined) out.endBefore = this._endBefore;
+
         return out;
     }
+
+    async get() {
+        const url = `${this.collectionRef.db.baseUrl}/${encodeURIComponent(this.collectionRef.fullPath)}/query`;
+        const headers = await this.collectionRef.db.getHeaders();
+
+        const queryBody = this.build();
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json', ...headers },
+            body: JSON.stringify(queryBody),
+        });
+        const json = await toJsonOrThrow(res);
+
+        const docs = (json.data || []).map((doc) => {
+            const data = deserializeRefs(this.collectionRef.db, doc.data || {});
+            data.id = doc.id;
+            data._path = `${this.collectionRef.fullPath}/${doc.id}`;
+            return data;
+        });
+        return docs;
+    }
+
+    onSnapshot(callback) {
+        const wsUrl = this.collectionRef.db.baseUrl
+            .replace(/^http/, 'ws')
+            + `/${encodeURIComponent(this.collectionRef.fullPath)}/stream`;
+
+        const ws = new WebSocket(wsUrl);
+        let ready = false;
+
+        ws.onopen = () => {
+            const queryBody = this.build();
+            ws.send(JSON.stringify(queryBody)); // send query definition once
+        };
+
+        ws.onmessage = (event) => {
+            const msg = JSON.parse(event.data);
+            if (msg.type === 'init' || msg.type === 'change') {
+                const docs = (msg.data || []).map(doc => {
+                    const data = deserializeRefs(this.collectionRef.db, doc);
+                    data.id = doc.id;
+                    return data;
+                });
+                callback(docs);
+            }
+        };
+
+        ws.onerror = (err) => console.error('onSnapshot websocket error', err);
+        return () => ws.close();
+    }
+
+
     mergeFrom(other) {
         this._filters.push(...(other._filters || []));
         this._order.push(...(other._order || []));
         if (other._limit) this._limit = other._limit;
         if (other._offset) this._offset = other._offset;
+        if (other._startAt) this._startAt = other._startAt;
+        if (other._startAfter) this._startAfter = other._startAfter;
+        if (other._endAt) this._endAt = other._endAt;
+        if (other._endBefore) this._endBefore = other._endBefore;
         return this;
     }
 }

@@ -1,6 +1,7 @@
 import express from 'express';
-import cors from 'cors';
-import { toNodeHandler } from "better-auth/node";
+//import cors from 'cors';
+import { WebSocketServer } from 'ws';
+//import { toNodeHandler } from "better-auth/node";
 
 import { createPool } from './lib/postbase/db.js';
 import { authMiddleware } from './lib/postbase/middlewares/auth.js';
@@ -20,7 +21,7 @@ const pool = createPool({
 });
 
 // This is firestore alternative
-const db = makePostbaseAdminClient({ pool });
+//const db = makePostbaseAdminClient({ pool });
 
 // This is firebase storage alternative
 const bucket = createLocalStorage(
@@ -30,6 +31,7 @@ const bucket = createLocalStorage(
 
 export const app = express();
 const router = express.Router();
+const wss = new WebSocketServer({ noServer: true });
 
 // BetterAuth
 // router.all("/auth/*", toNodeHandler(auth));
@@ -46,3 +48,50 @@ router.use('/storage', createStorageRouter(UPLOAD_DESTINATION, bucket, rulesModu
 app.use(express.json());
 app.use(await authMiddleware(pool));
 app.use('/api', router);
+
+// Upgrade HTTP → WS when path matches /api/<table>/stream
+app.on('upgrade', (req, socket, head) => {
+    const match = req.url.match(/^\/api\/([^\/]+)\/stream$/);
+    if (!match) return socket.destroy();
+    const table = match[1];
+    wss.handleUpgrade(req, socket, head, (ws) => {
+        wss.emit('connection', ws, table);
+    });
+});
+
+wss.on('connection', async (ws, table) => {
+    console.log(`WebSocket connected for table: ${table}`);
+
+    // Each connection gets its own PG client to LISTEN
+    const client = await pool.connect();
+    await client.query(`LISTEN changes_${table}`);
+
+    // Receive the initial query definition from the client
+    ws.once('message', async (msg) => {
+        const query = JSON.parse(msg.toString());
+        const { filters = [], order = [], limit = 100, offset = 0 } = query;
+
+        // Send initial data
+        const { whereSql, params } = buildWhere(filters);
+        const orderSql = buildOrder(order);
+        const sql = `
+        SELECT id, data, created_at, updated_at
+        FROM "${table}"
+        ${whereSql} ${orderSql}
+        LIMIT ${limit} OFFSET ${offset}`;
+        const res = await runQuery(pool, sql, params);
+        ws.send(JSON.stringify({ type: 'init', data: res.rows.map(r => ({ id: r.id, ...r.data })) }));
+    });
+
+    // Handle Postgres notifications
+    client.on('notification', async (msg) => {
+        if (!ws.readyState === ws.OPEN) return;
+        const payload = JSON.parse(msg.payload);
+        ws.send(JSON.stringify({ type: 'change', data: payload }));
+    });
+
+    ws.on('close', () => {
+        client.query(`UNLISTEN changes_${table}`).catch(console.error);
+        client.release();
+    });
+});
