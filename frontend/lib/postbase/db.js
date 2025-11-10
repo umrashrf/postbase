@@ -163,6 +163,36 @@ function deserializeRefs(db, obj) {
     return obj;
 }
 
+class DocumentSnapshot {
+    constructor(id, data, path, db) {
+        this.id = id;
+        this._data = data;
+        this._path = path;
+        this._db = db;
+    }
+
+    data() {
+        return this._data;
+    }
+
+    get ref() {
+        const parts = this._path.split('/');
+        let ref = this._db.collection(parts[0]).doc(parts[1]);
+        for (let i = 2; i < parts.length; i += 2) {
+            ref = ref.collection(parts[i]).doc(parts[i + 1]);
+        }
+        return ref;
+    }
+
+    get path() {
+        return this._path;
+    }
+
+    exists() {
+        return !!this._data;
+    }
+}
+
 class DocumentReference {
     constructor(db, collectionName, id, parentPath = null) {
         this.db = db;
@@ -188,9 +218,7 @@ class DocumentReference {
         const res = await fetch(url, { headers });
         const json = await toJsonOrThrow(res);
         const data = deserializeRefs(this.db, json.data || {});
-        data.id = this.id;
-        data._path = this.fullPath;
-        return data;
+        return new DocumentSnapshot(this.id, data, this.fullPath, this.db);
     }
 
     async set(data, opts = {}) {
@@ -344,11 +372,10 @@ class QueryBuilder {
         });
         const json = await toJsonOrThrow(res);
 
+        // Map each document to a DocumentSnapshot
         const docs = (json.data || []).map((doc) => {
             const data = deserializeRefs(this.collectionRef.db, doc.data || {});
-            data.id = doc.id;
-            data._path = `${this.collectionRef.fullPath}/${doc.id}`;
-            return data;
+            return new DocumentSnapshot(doc.id, data, `${this.collectionRef.fullPath}/${doc.id}`, this.collectionRef.db);
         });
         return docs;
     }
