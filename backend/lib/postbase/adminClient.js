@@ -104,7 +104,7 @@ export function makePostbaseAdminClient({ pool }) {
 
         async get(client = pool) {
             const sql = `SELECT id, data FROM "${this.table}" WHERE id=$1 LIMIT 1`;
-            const result = await runQuery(client, [this.id]);
+            const result = await runQuery(client, sql, [this.id]);
             if (!result.rowCount) return null;
             const row = result.rows[0];
             return { id: row.id, ...row.data };
