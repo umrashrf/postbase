@@ -97,7 +97,7 @@ export function makeGenericRouter({ pool, router, rulesModule, authField = 'auth
             return res.json({ data: out });
         } catch (err) {
             console.error(err);
-            res.status(400).json({ error: err.message });
+            res.status(400).json({ error: "Internal Error Occurred" });
         }
     });
 
@@ -121,7 +121,7 @@ export function makeGenericRouter({ pool, router, rulesModule, authField = 'auth
             res.status(201).json({ data: { id: row.id, ...row.data } });
         } catch (err) {
             console.error(err);
-            res.status(400).json({ error: err.message });
+            res.status(400).json({ error: "Internal Error Occurred" });
         }
     });
 
@@ -142,7 +142,7 @@ export function makeGenericRouter({ pool, router, rulesModule, authField = 'auth
             res.json({ data: { id: row.id, ...row.data } });
         } catch (err) {
             console.error(err);
-            res.status(400).json({ error: err.message });
+            res.status(400).json({ error: "Internal Error Occurred" });
         }
     });
 
@@ -171,7 +171,7 @@ export function makeGenericRouter({ pool, router, rulesModule, authField = 'auth
             res.json({ data: { id: row.id, ...row.data } });
         } catch (err) {
             console.error(err);
-            res.status(400).json({ error: err.message });
+            res.status(400).json({ error: "Internal Error Occurred" });
         }
     });
 
@@ -201,7 +201,7 @@ export function makeGenericRouter({ pool, router, rulesModule, authField = 'auth
             res.json({ data: { id: row.id, ...row.data } });
         } catch (err) {
             console.error(err);
-            res.status(400).json({ error: err.message });
+            res.status(400).json({ error: "Internal Error Occurred" });
         }
     });
 
@@ -224,7 +224,7 @@ export function makeGenericRouter({ pool, router, rulesModule, authField = 'auth
             res.json({ data: { id: result.rows[0].id } });
         } catch (err) {
             console.error(err);
-            res.status(400).json({ error: err.message });
+            res.status(400).json({ error: "Internal Error Occurred" });
         }
     });
 
