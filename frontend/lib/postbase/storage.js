@@ -256,7 +256,10 @@ export class StorageRef {
     }
 }
 
-export function createClientStorage(baseUrl, getAuthToken = null) {
+export function createClientStorage({
+    baseUrl = '/api',
+    getAuthToken = null
+} = {}) {
     baseUrl = baseUrl.replace(/\/+$/, '');
     return {
         ref: (path) => new StorageRef(path, baseUrl, getAuthToken),
