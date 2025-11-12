@@ -1,6 +1,13 @@
-import { Pool } from "pg";
 import { betterAuth } from "better-auth";
 //import { phoneNumber } from "better-auth/plugins"
+//import { makePostbaseAdminClient } from "./lib/postbase/adminClient.js";
+
+const pool = createPool({
+    connectionString: process.env.DATABASE_URL
+});
+
+// Enable if required
+//const db = makePostbaseAdminClient({ pool });
 
 export const auth = betterAuth({
     // Following is only needed for local testing
@@ -18,9 +25,7 @@ export const auth = betterAuth({
     //         domain: "localhost",
     //     },
     // },
-    database: new Pool({
-        connectionString: process.env.DATABASE_URL,
-    }),
+    database: pool,
     emailAndPassword: {
         enabled: true,
         sendResetPassword: async ({ user, url, token }, request) => {
