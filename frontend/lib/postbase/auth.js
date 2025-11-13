@@ -29,6 +29,7 @@ export function createAuthClient(auth) {
 
             if (JSON.stringify(newUser) !== JSON.stringify(currentUser)) {
                 currentUser = newUser;
+                currentUser.getIdToken = getIdToken;
                 notifySubscribers(currentUser);
             }
         } catch (err) {
@@ -53,6 +54,7 @@ export function createAuthClient(auth) {
             const user = data?.user ?? null;
             user.uid = user.id;
             currentUser = user;
+            currentUser.getIdToken = getIdToken;
             callback(user);
         })();
 
@@ -70,7 +72,7 @@ export function createAuthClient(auth) {
      * Firebase-like getIdToken() equivalent.
      * Returns the current access token (JWT) if a session exists.
      */
-    async function getIdToken() {
+    async function getIdToken(refresh = false) {
         const { data } = await auth.getSession();
         const token =
             data?.session?.token ?? data?.session?.token ?? null;
@@ -90,6 +92,5 @@ export function createAuthClient(auth) {
         },
 
         onAuthStateChanged,
-        getIdToken,
     };
 }
