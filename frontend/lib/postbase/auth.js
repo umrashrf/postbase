@@ -50,6 +50,7 @@ export function createAuthClient(auth) {
         (async () => {
             const { data } = await auth.getSession();
             const user = data?.user ?? null;
+            user.uid = user.id;
             currentUser = user;
             callback(user);
         })();
