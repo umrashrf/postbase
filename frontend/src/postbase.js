@@ -11,11 +11,11 @@ async function getBetterAuthToken() {
 }
 
 export const db = getDB({
-    baseUrl: import.meta.env.VITE_API_BASE,
+    baseUrl: import.meta.env.VITE_API_BASE + '/db',
     getAuthToken: getBetterAuthToken,
 });
 
 export const storage = createClientStorage({
-    baseUrl: import.meta.env.VITE_API_BASE,
+    baseUrl: import.meta.env.VITE_API_BASE + '/storage',
     getAuthToken: getBetterAuthToken,
 });
