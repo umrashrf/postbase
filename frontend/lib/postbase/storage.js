@@ -90,7 +90,7 @@ class UploadTask {
         };
     }
 
-    _start() {
+    async _start() {
         // Start upload (or resume). Implemented with XHR for progress and abort.
         this._state = TaskState.RUNNING;
         this._aborted = false;
@@ -99,7 +99,7 @@ class UploadTask {
         this._xhr.open('POST', url, true);
 
         // Auth header if provided
-        const token = this.getAuthToken && this.getAuthToken();
+        const token = this.getAuthToken && await this.getAuthToken();
         if (token) {
             this._xhr.setRequestHeader('Authorization', `Bearer ${token}`);
         }
