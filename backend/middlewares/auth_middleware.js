@@ -7,4 +7,4 @@ const pool = createPool({
     connectionString: process.env.DATABASE_URL
 });
 
-export const authenticate = await authMiddleware(pool);
+export const authenticate = authMiddleware(pool);
