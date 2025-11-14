@@ -1,3 +1,5 @@
+import express from 'express';
+
 import { runQuery } from './db.js';
 import { MetadataCache } from './metadataCache.js';
 import { makeEvaluator } from './rulesEngine.js';
@@ -12,7 +14,8 @@ import { makeEvaluator } from './rulesEngine.js';
  *
  * Example: SELECT data FROM users;  -- JSON objects
  */
-export function makeGenericRouter({ pool, router, rulesModule, authField = 'auth' }) {
+export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
+    const router = express.Router();
     const meta = new MetadataCache(pool);
     const evaluator = makeEvaluator(rulesModule);
 

@@ -33,7 +33,7 @@ export function getDB({
     defaultHeaders = {},
     getAuthToken = null, // 👈 optional async token resolver
 } = {}) {
-    return new Database(baseUrl.replace(/\/$/, ''), defaultHeaders, getAuthToken);
+    return new Database(baseUrl.replace(/\/$/, '') + '/db', defaultHeaders, getAuthToken);
 }
 
 class Database {

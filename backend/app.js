@@ -36,7 +36,8 @@ const wss = new WebSocketServer({ noServer: true });
 // BetterAuth
 // router.all("/auth/*", toNodeHandler(auth));
 
-makeGenericRouter({ pool, router, rulesModule: rulesModuleDB, authField: 'auth' });
+const genericRouter = makeGenericRouter({ pool, rulesModule: rulesModuleDB, authField: 'auth' });
+router.use('/db', genericRouter);
 
 router.use('/storage', createStorageRouter(UPLOAD_DESTINATION, bucket, rulesModuleStorage));
 
