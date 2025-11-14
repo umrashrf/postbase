@@ -4,13 +4,13 @@ import { WebSocketServer } from 'ws';
 //import { toNodeHandler } from "better-auth/node";
 
 import { createPool } from './lib/postbase/db.js';
-import { authMiddleware } from './lib/postbase/middlewares/auth.js';
 import { makeGenericRouter } from './lib/postbase/genericRouter.js';
 import { createStorageRouter } from './lib/postbase/storage.js';
 import { createLocalStorage } from './postbase/local-storage.js';
-import { makePostbaseAdminClient } from './postbase/adminClient.js';
+//import { makePostbaseAdminClient } from './postbase/adminClient.js';
 import rulesModuleDB from './postbase_db_rules.js';
 import rulesModuleStorage from './postbase_storage_rules.js';
+import { authenticate } from './middlewares/auth_middleware.js';
 
 const UPLOAD_DESTINATION = '/absolute/path/to/where/user/uploads/will/be/stored';
 const UPLOAD_PUBLIC_URL = 'https://www.yourwebsite.com/uploads';
@@ -37,9 +37,9 @@ const wss = new WebSocketServer({ noServer: true });
 // router.all("/auth/*", toNodeHandler(auth));
 
 const genericRouter = makeGenericRouter({ pool, rulesModule: rulesModuleDB, authField: 'auth' });
-router.use('/db', genericRouter);
+router.use('/db', authenticate, genericRouter);
 
-router.use('/storage', createStorageRouter(UPLOAD_DESTINATION, bucket, rulesModuleStorage));
+router.use('/storage', authenticate, createStorageRouter(UPLOAD_DESTINATION, bucket, rulesModuleStorage));
 
 // For local testing
 // app.use(cors({
@@ -47,7 +47,6 @@ router.use('/storage', createStorageRouter(UPLOAD_DESTINATION, bucket, rulesModu
 //     credentials: true,
 // }));
 app.use(express.json());
-app.use(await authMiddleware(pool));
 app.use('/api', router);
 
 // Upgrade HTTP → WS when path matches /api/<table>/stream
