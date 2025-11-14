@@ -29,11 +29,11 @@ function toJsonOrThrow(res) {
 }
 
 export function getDB({
-    baseUrl = '/api',
+    baseUrl = '/api/db',
     defaultHeaders = {},
     getAuthToken = null, // 👈 optional async token resolver
 } = {}) {
-    return new Database(baseUrl.replace(/\/$/, '') + '/db', defaultHeaders, getAuthToken);
+    return new Database(baseUrl.replace(/\/$/, ''), defaultHeaders, getAuthToken);
 }
 
 class Database {
