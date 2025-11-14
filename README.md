@@ -16,25 +16,11 @@ Mostly all code is ChatGPT generated but manually tested by human.
 
 ### Authentication (Firebase Like API)
 
-#### auth.js
-
-```javascript
-import { createAuthClient as createBetterAuthClient } from 'better-auth/client';
-import { createAuthClient } from './lib/postbase/auth';
-
-export const authClient = createBetterAuthClient({
-    // baseURL: import.meta.env.VITE_API_BASE + '/auth', // Optional, only specify if on a different domain/path,
-});
-
-export const auth = createAuthClient(authClient);
-
-export const { signUp, signIn, signOut, getSession } = authClient;
-```
-
 #### Sign Up
 
 ```javascript
 import { signIn } from './auth';
+
 await signUp.email({ 
     email: 'umrashrf@gmail.com', 
     password: 'secure-password', 
@@ -47,6 +33,7 @@ await signUp.email({
 
 ```javascript
 import { signIn } from './auth';
+
 await signIn.email({ 
     email: 'umrashrf@gmail.com',
     password: 'secure-password',
