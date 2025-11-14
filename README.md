@@ -54,6 +54,20 @@ await signIn.email({
 });
 ```
 
+#### auth.onAuthStateChanged, auth.currentUser and auth.currentUser.getIdToken()
+
+```javascript
+import { auth } from './auth';
+
+auth.onAuthStateChanged(user => {
+    // user
+    auth.currentUser === user // true
+});
+
+const token = auth.currentUser.getIdToken();
+// token for API authentication and rules engine
+```
+
 ### Document Storage (Firestore Like API)
 
 #### Collections, get/set/where/orderBy/limit/delete
