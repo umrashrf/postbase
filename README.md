@@ -12,19 +12,6 @@ Brand new project launched 02 Nov 2025, this is boiler plate but working! Expect
 
 Mostly all code is ChatGPT generated but manually tested by human.
 
-### Todo
-- [ ] Firebase Functions Replacement (Backend API can be used for now)
-- [ ] Firebase Storage Replacement (Support S3 and other backend)
-
-### In Progress
-- [ ] Testing
-
-### Done
-- [x] Firebase Authentication Replacement
-- [x] Firebase Firestore Replacement
-- [x] Firebase Storage Replacement (Filebased Only)
-- [x] Firebase Storage Replacement (HTTPS Based Upload)
-
 ## Docs
 
 ### Authentication (Firebase Like API)
@@ -89,6 +76,19 @@ reference.onSnapshot(docs => {
     // use docs
 });
 ```
+
+### Todo
+- [ ] Firebase Functions Replacement (Backend API can be used for now)
+- [ ] Firebase Storage Replacement (Support S3 and other backend)
+
+### In Progress
+- [ ] Testing
+
+### Done
+- [x] Firebase Authentication Replacement
+- [x] Firebase Firestore Replacement
+- [x] Firebase Storage Replacement (Filebased Only)
+- [x] Firebase Storage Replacement (HTTPS Based Upload)
 
 ## License 
 
