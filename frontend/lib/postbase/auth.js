@@ -31,7 +31,9 @@ export function createAuthClient(auth) {
 
             if (JSON.stringify(newUser) !== JSON.stringify(currentUser)) {
                 currentUser = newUser;
-                currentUser.getIdToken = getIdToken;
+                if (currentUser) {
+                    currentUser.getIdToken = getIdToken;
+                }
                 notifySubscribers(currentUser);
             }
         } catch (err) {
@@ -58,7 +60,9 @@ export function createAuthClient(auth) {
                 user.uid = user.id;
             }
             currentUser = user;
-            currentUser.getIdToken = getIdToken;
+            if (currentUser) {
+                currentUser.getIdToken = getIdToken;
+            }
             callback(user);
         })();
 
