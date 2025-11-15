@@ -408,7 +408,7 @@ class QueryBuilder {
 
     onSnapshot(callback, errorCallback) {
         const wsUrl = this.collectionRef.db.baseUrl
-            .replace(/^http/, 'ws')
+            .replace(/^http/, 'wss')
             + `/${this.collectionRef.fullPath}/stream`;
 
         const ws = new WebSocket(wsUrl);
