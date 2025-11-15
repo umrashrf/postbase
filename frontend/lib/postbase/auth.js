@@ -25,7 +25,9 @@ export function createAuthClient(auth) {
         try {
             const { data } = await auth.getSession();
             const newUser = data?.user ?? null;
-            newUser.uid = newUser.id;
+            if (newUser) {
+                newUser.uid = newUser.id;
+            }
 
             if (JSON.stringify(newUser) !== JSON.stringify(currentUser)) {
                 currentUser = newUser;
@@ -52,7 +54,9 @@ export function createAuthClient(auth) {
         (async () => {
             const { data } = await auth.getSession();
             const user = data?.user ?? null;
-            user.uid = user.id;
+            if (user) {
+                user.uid = user.id;
+            }
             currentUser = user;
             currentUser.getIdToken = getIdToken;
             callback(user);
