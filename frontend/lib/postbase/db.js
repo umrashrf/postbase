@@ -127,9 +127,14 @@ function serializeRefs(obj) {
     if (obj instanceof DocumentReference) {
         return { _type: 'ref', path: obj.fullPath };
     }
-    if (Array.isArray(obj)) {
-        return obj.map(serializeRefs);
+
+    //NEW: If Timestamp instance, send canonical structure
+    if (obj instanceof Timestamp) {
+        return { _type: 'timestamp', iso: obj.iso };
     }
+
+    if (Array.isArray(obj)) return obj.map(serializeRefs);
+
     if (obj && typeof obj === 'object') {
         const out = {};
         for (const [k, v] of Object.entries(obj)) {
@@ -137,6 +142,7 @@ function serializeRefs(obj) {
         }
         return out;
     }
+
     return obj;
 }
 
@@ -145,30 +151,35 @@ function serializeRefs(obj) {
  */
 function deserializeRefs(db, obj) {
     if (Array.isArray(obj)) {
-        return obj.map((v) => deserializeRefs(db, v));
+        return obj.map(v => deserializeRefs(db, v));
     }
+
     if (obj && typeof obj === 'object') {
-        if (obj._type === 'ref' && typeof obj.path === 'string') {
-            // Convert "users/alovelace" → collection('users').doc('alovelace')
-            const parts = obj.path.split('/');
-            if (parts.length % 2 === 0) {
-                let ref = db.collection(parts[0]).doc(parts[1]);
-                for (let i = 2; i < parts.length; i += 2) {
-                    ref = ref.collection(parts[i]).doc(parts[i + 1]);
-                }
-                return ref;
-            }
-            // fallback: return plain object if malformed
-            return obj;
+        //Detect timestamp object sent by backend/admin client
+        if (obj._type === 'timestamp' && typeof obj.iso === 'string') {
+            return new Timestamp(obj.iso);
         }
+
+        // Detect PostgreSQL TIMESTAMPTZ returned as strings
+        if (isIsoDateString(obj)) {
+            return new Timestamp(obj);
+        }
+
         const out = {};
         for (const [k, v] of Object.entries(obj)) {
             out[k] = deserializeRefs(db, v);
         }
         return out;
     }
+
+    //If a primitive ISO string is received, convert it
+    if (isIsoDateString(obj)) {
+        return new Timestamp(obj);
+    }
+
     return obj;
 }
+
 
 class DocumentSnapshot {
     constructor(id, data, path, db) {
@@ -461,10 +472,40 @@ class QueryBuilder {
 }
 
 /* Basic helpers similar to Firestore types */
-export const Timestamp = {
-    now: () => ({ _type: 'timestamp', iso: new Date().toISOString() }),
-    fromDate: (d) => ({ _type: 'timestamp', iso: d.toISOString() })
-};
+
+function isIsoDateString(v) {
+    return (
+        typeof v === 'string' &&
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(v)
+    );
+}
+
+export class Timestamp {
+    constructor(isoString) {
+        this._type = 'timestamp';
+        this.iso = isoString;
+    }
+
+    static fromDate(d) {
+        return new Timestamp(d.toISOString());
+    }
+
+    static now() {
+        return new Timestamp(new Date().toISOString());
+    }
+
+    toDate() {
+        return new Date(this.iso);
+    }
+
+    toMillis() {
+        return this.toDate().getTime();
+    }
+
+    toString() {
+        return this.iso;
+    }
+}
 
 export const FieldValue = {
     increment: (by = 1) => ({ _op: 'increment', by }),
