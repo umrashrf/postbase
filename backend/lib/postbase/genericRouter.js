@@ -9,8 +9,8 @@ import { makeEvaluator } from './rulesEngine.js';
  * Each table is assumed to have:
  *   id UUID PRIMARY KEY,
  *   data JSONB NOT NULL,
- *   created_at TIMESTAMPTZ DEFAULT now(),
- *   updated_at TIMESTAMPTZ DEFAULT now()
+ *   created_at TIMESTAMPTZ DEFAULT now() at time zone 'UTC',
+ *   updated_at TIMESTAMPTZ DEFAULT now() at time zone 'UTC'
  *
  * Example: SELECT data FROM users;  -- JSON objects
  */
@@ -171,14 +171,14 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
 
             let sql = `
                     UPDATE "${table}"
-                    SET data = $1, updated_at = now()
+                    SET data = $1, updated_at = now() at time zone 'UTC'
                     WHERE id = $2
                     RETURNING id, data, created_at, updated_at`;
 
             if (!existing.rowCount) {
                 sql = `
                     INSERT INTO "${table}" (data, id, created_at, updated_at)
-                    VALUES ($1, $2, now(), now())
+                    VALUES ($1, $2, now() at time zone 'UTC', now() at time zone 'UTC')
                     RETURNING id, data, created_at, updated_at`;
             }
 
@@ -209,7 +209,7 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
             const merged = { ...current, ...payload };
             const sql = `
                 UPDATE "${table}"
-                SET data = $1, updated_at = now()
+                SET data = $1, updated_at = now() at time zone 'UTC'
                 WHERE id = $2
                 RETURNING id, data, created_at, updated_at`;
             const result = await runQuery(pool, sql, [merged, id]);

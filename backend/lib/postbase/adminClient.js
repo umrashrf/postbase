@@ -120,7 +120,7 @@ export function makePostbaseAdminClient({ pool }) {
             INSERT INTO "${this.table}" (id, data)
             VALUES ($1, $2)
             ON CONFLICT (id)
-            DO UPDATE SET data = EXCLUDED.data, updated_at = now()
+            DO UPDATE SET data = EXCLUDED.data, updated_at = now() at time zone 'UTC'
             RETURNING id, data`;
             const result = await runQuery(client, sql, [this.id, finalData]);
             const row = result.rows[0];
