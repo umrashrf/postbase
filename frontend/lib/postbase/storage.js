@@ -224,6 +224,9 @@ export class StorageRef {
             }
         };
 
+        // Backward compatability for Firebase Storage
+        this.getDownloadURL = () => task.snapshotRefGetDownloadURL();
+
         // Wrap the task in a Promise that resolves when upload completes
         return new Promise((resolve, reject) => {
             task.on(
