@@ -69,7 +69,7 @@ class CollectionReference {
     }
 
     get fullPath() {
-        return this.parentPath ? `${this.parentPath}/${this.name}` : this.name;
+        return this.parentPath ? `${this.parentPath}/${encodeURIComponent(this.name)}` : encodeURIComponent(this.name);
     }
 
     doc(id) {
@@ -81,7 +81,7 @@ class CollectionReference {
     }
 
     async add(data) {
-        const url = `${this.db.baseUrl}/${encodeURIComponent(this.fullPath)}`;
+        const url = `${this.db.baseUrl}/${this.fullPath}`;
         const headers = await this.db.getHeaders();
         const res = await fetch(url, {
             method: 'POST',
@@ -210,8 +210,8 @@ class DocumentReference {
 
     /** Full document path, e.g. "users/u1/posts/p2" */
     get fullPath() {
-        const base = this.parentPath ? `${this.parentPath}/${this.collectionName}` : this.collectionName;
-        return `${base}/${this.id}`;
+        const base = this.parentPath ? `${this.parentPath}/${encodeURIComponent(this.collectionName)}` : encodeURIComponent(this.collectionName);
+        return `${base}/${encodeURIComponent(this.id)}`;
     }
 
     /** Allow chaining subcollections under this document */
@@ -220,7 +220,7 @@ class DocumentReference {
     }
 
     async get() {
-        const url = `${this.db.baseUrl}/${encodeURIComponent(this.fullPath)}`;
+        const url = `${this.db.baseUrl}/${this.fullPath}`;
         const headers = await this.db.getHeaders();
         const res = await fetch(url, { headers });
         const json = await toJsonOrThrow(res);
@@ -229,7 +229,7 @@ class DocumentReference {
     }
 
     async set(data, opts = {}) {
-        const url = `${this.db.baseUrl}/${encodeURIComponent(this.fullPath)}`;
+        const url = `${this.db.baseUrl}/${this.fullPath}`;
         const headers = await this.db.getHeaders();
 
         // If merge=true, fetch existing data first and merge locally
@@ -254,7 +254,7 @@ class DocumentReference {
     }
 
     async update(data) {
-        const url = `${this.db.baseUrl}/${encodeURIComponent(this.fullPath)}`;
+        const url = `${this.db.baseUrl}/${this.fullPath}`;
         const headers = await this.db.getHeaders();
         const res = await fetch(url, {
             method: 'PATCH',
@@ -266,7 +266,7 @@ class DocumentReference {
     }
 
     async delete() {
-        const url = `${this.db.baseUrl}/${encodeURIComponent(this.fullPath)}`;
+        const url = `${this.db.baseUrl}/${this.fullPath}`;
         const headers = await this.db.getHeaders();
         const res = await fetch(url, { method: 'DELETE', headers });
         const json = await toJsonOrThrow(res);
@@ -387,7 +387,7 @@ class QueryBuilder {
     }
 
     async get() {
-        const url = `${this.collectionRef.db.baseUrl}/${encodeURIComponent(this.collectionRef.fullPath)}/query`;
+        const url = `${this.collectionRef.db.baseUrl}/${this.collectionRef.fullPath}/query`;
         const headers = await this.collectionRef.db.getHeaders();
 
         const queryBody = this.build();
@@ -409,7 +409,7 @@ class QueryBuilder {
     onSnapshot(callback, errorCallback) {
         const wsUrl = this.collectionRef.db.baseUrl
             .replace(/^http/, 'ws')
-            + `/${encodeURIComponent(this.collectionRef.fullPath)}/stream`;
+            + `/${this.collectionRef.fullPath}/stream`;
 
         const ws = new WebSocket(wsUrl);
 
