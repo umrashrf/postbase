@@ -155,20 +155,33 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
         const id = req.params.id;
         try {
             const existing = await runQuery(pool, `SELECT data FROM "${table}" WHERE id=$1 LIMIT 1`, [id]);
-            if (!existing.rowCount) return res.status(404).json({ error: 'not_found' });
+            const payload = req.body || {};
 
-            const current = existing.rows[0].data;
+            let current = payload;
+            current.id = id; // for rules engine
+            if (existing.rowCount) {
+                current = existing.rows[0].data;
+            }
+
             const request = mapRequest(req);
             request.resource = current;
+
             const allowed = await evaluator.evaluate(table, 'update', request, current);
             if (!allowed) return res.status(403).json({ error: 'forbidden' });
 
-            const payload = req.body || {};
-            const sql = `
-                UPDATE "${table}"
-                SET data = $1, updated_at = now()
-                WHERE id = $2
-                RETURNING id, data, created_at, updated_at`;
+            let sql = `
+                    UPDATE "${table}"
+                    SET data = $1, updated_at = now()
+                    WHERE id = $2
+                    RETURNING id, data, created_at, updated_at`;
+
+            if (!existing.rowCount) {
+                sql = `
+                    INSERT INTO "${table}" (data, id, created_at, updated_at)
+                    VALUES ($1, $2, now(), now())
+                    RETURNING id, data, created_at, updated_at`;
+            }
+
             const result = await runQuery(pool, sql, [payload, id]);
             const row = result.rows[0];
             res.json({ data: { id: row.id, ...row.data } });
