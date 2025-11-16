@@ -78,6 +78,19 @@ reference.onSnapshot(docs => {
 });
 ```
 
+#### Admin Client
+
+```javascript
+import { createAdminClient } from './lib/postbase/compat/admin.js';
+import { authClient } from './auth.js';
+
+const admin = createAdminClient({ authClient });
+
+const user = await admin.auth().getUser(userId);
+
+const doc = await admin.firestore().collection('collection').doc('docId').get();
+```
+
 ### Todo
 - [ ] Firebase Functions Replacement (Backend API can be used for now)
 - [ ] Firebase Storage Replacement (Support S3 and other backend)
