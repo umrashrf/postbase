@@ -19,6 +19,20 @@ export function createAdminClient(
                     };
                     return userObj;
                 },
+                // TODO
+                // deleteUser: async (uidToDelete) => {
+                //     const { data: user, error } = await authClient.admin.removeUser({
+                //         userId: uidToDelete,
+                //     });
+                //     if (error) {
+                //         throw error;
+                //     }
+                //     const userObj = {
+                //         ...user,
+                //         displayName: user.name,
+                //     };
+                //     return userObj;
+                // },
             };
         },
         firestore: () => {
