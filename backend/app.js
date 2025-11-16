@@ -1,7 +1,7 @@
 import express from 'express';
 //import cors from 'cors';
 import { WebSocketServer } from 'ws';
-//import { toNodeHandler } from "better-auth/node";
+import { toNodeHandler } from "better-auth/node";
 
 import { createPool } from './lib/postbase/db.js';
 import { makeGenericRouter } from './lib/postbase/genericRouter.js';
@@ -11,6 +11,7 @@ import { createLocalStorage } from './postbase/local-storage.js';
 import rulesModuleDB from './postbase_db_rules.js';
 import rulesModuleStorage from './postbase_storage_rules.js';
 import { authenticate } from './middlewares/auth_middleware.js';
+import { auth } from './router/auth.js';
 
 const UPLOAD_DESTINATION = '/absolute/path/to/where/user/uploads/will/be/stored'; // use public/uploads directory if using React/Vite
 const UPLOAD_PUBLIC_URL = 'https://www.yourwebsite.com/uploads';
@@ -34,7 +35,7 @@ const router = express.Router();
 const wss = new WebSocketServer({ noServer: true });
 
 // BetterAuth
-// router.all("/auth/*", toNodeHandler(auth));
+router.all("/auth/*", toNodeHandler(auth));
 
 const genericRouter = makeGenericRouter({ pool, rulesModule: rulesModuleDB, authField: 'auth' });
 router.use('/db', authenticate, genericRouter);
