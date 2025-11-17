@@ -76,6 +76,9 @@ sudo ln -s /etc/nginx/sites-available/www.your_website.com.conf /etc/nginx/sites
 nginx -t
 
 sudo systemctl restart nginx
+
+tail /var/log/nginx/error.log
+tail /var/log/nginx/access.log
 ```
 
 Note you can skip running frontend server if you are using nginx.
