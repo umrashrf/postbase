@@ -157,12 +157,12 @@ function deserializeRefs(db, obj) {
     if (obj && typeof obj === 'object') {
         //Detect timestamp object sent by backend/admin client
         if (obj._type === 'timestamp' && typeof obj.iso === 'string') {
-            return new Timestamp(obj.iso);
+            return Timestamp.fromPostgres(obj.iso);
         }
 
         // Detect PostgreSQL TIMESTAMPTZ returned as strings
         if (isIsoDateString(obj)) {
-            return new Timestamp(obj);
+            return Timestamp.fromPostgres(obj);
         }
 
         const out = {};
@@ -174,7 +174,7 @@ function deserializeRefs(db, obj) {
 
     //If a primitive ISO string is received, convert it
     if (isIsoDateString(obj)) {
-        return new Timestamp(obj);
+        return Timestamp.fromPostgres(obj);
     }
 
     return obj;
@@ -481,29 +481,68 @@ function isIsoDateString(v) {
 }
 
 export class Timestamp {
-    constructor(isoString) {
+    constructor(seconds, nanoseconds) {
         this._type = 'timestamp';
-        this.iso = isoString;
+        this.seconds = seconds;
+        this.nanoseconds = nanoseconds;
     }
 
-    static fromDate(d) {
-        return new Timestamp(d.toISOString());
+    /** Create from JS Date */
+    static fromDate(date) {
+        const millis = date.getTime();
+        const seconds = Math.floor(millis / 1000);
+        const nanoseconds = (millis % 1000) * 1e6;
+        return new Timestamp(seconds, nanoseconds);
     }
 
+    /** Now */
     static now() {
-        return new Timestamp(new Date().toISOString());
+        return Timestamp.fromDate(new Date());
     }
 
+    /** Create from Firestore-style seconds + nanos */
+    static fromSeconds(seconds, nanoseconds = 0) {
+        return new Timestamp(seconds, nanoseconds);
+    }
+
+    /** Create from Postgres ISO datetime string */
+    static fromPostgres(isoString) {
+        const date = new Date(isoString);
+
+        if (isNaN(date.getTime())) {
+            throw new Error("Invalid Postgres ISO datetime: " + isoString);
+        }
+
+        // Parse fractional seconds manually (Postgres can include microseconds)
+        const match = isoString.match(/\.(\d+)(?=Z|[+-]\d\d:?\d\d$)/);
+        let nanos = 0;
+
+        if (match) {
+            let fractional = match[1];                 // e.g., "789123"
+            if (fractional.length > 9) {
+                fractional = fractional.slice(0, 9);   // trim to nanoseconds
+            }
+            nanos = parseInt((fractional + "000000000").slice(0, 9), 10);
+        }
+
+        const seconds = Math.floor(date.getTime() / 1000);
+
+        return new Timestamp(seconds, nanos);
+    }
+
+    /** Convert back to JS Date */
     toDate() {
-        return new Date(this.iso);
+        return new Date(this.seconds * 1000 + Math.floor(this.nanoseconds / 1e6));
     }
 
+    /** Milliseconds since epoch */
     toMillis() {
-        return this.toDate().getTime();
+        return this.seconds * 1000 + Math.floor(this.nanoseconds / 1e6);
     }
 
+    /** ISO string */
     toString() {
-        return this.iso;
+        return this.toDate().toISOString();
     }
 }
 
