@@ -25,6 +25,10 @@ sudo certbot certonly --manual --preferred-challenges dns-01 -d your_website.com
 
 ## Enable Nginx
 
+Configuring nginx varies based on whether you are using apt (Linux) or homebrew (Mac) package manager.
+
+### Homebrew (Mac)
+
 First, you must edit this file /Users/your_username/your_website/nginx/www.your_website.com.conf and fix names, paths, etc
 
 ```
@@ -37,4 +41,26 @@ tail /opt/homebrew/var/log/nginx/error.log
 tail /opt/homebrew/var/log/nginx/access.log
 ```
 
-Note you can skip running frontend server if your are using nginx.
+## apt (Linux)
+
+This is different because when nginx is installed using apt, it runs with sudo.
+
+```
+sudo mkdir /etc/ssl/certs/your_website
+sudo cp nginx/letsencrypt/fullchain.pem /etc/ssl/certs/your_website
+
+sudo mkdir /etc/ssl/private/your_website
+sudo cp nginx/letsencrypt/privkey.pem /etc/ssl/private/your_website
+
+mkdir /var/www/html/your_website
+sudo cp -a frontend/dist/. /var/www/html/your_website
+
+sudo cp nginx/apt/www.your_website.com.conf /etc/nginx/sites-available/
+sudo ln -s /etc/nginx/sites-available/www.your_website.com.conf /etc/nginx/sites-enabled
+
+nginx -t
+
+sudo systemctl restart nginx
+```
+
+Note you can skip running frontend server if you are using nginx.
