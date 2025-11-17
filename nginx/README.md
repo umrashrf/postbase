@@ -2,9 +2,15 @@
 
 ## Install
 
+### Homebrew (Mac)
+
 ```
-brew install nginx certbot
+brew install nginx
 ```
+
+## apt (Linux)
+
+Installation instructions https://nginx.org/en/linux_packages.html#Ubuntu
 
 ## Map hosts to localhost
 
@@ -17,8 +23,17 @@ sudo echo "127.0.0.1 www.your_website.com" >> /etc/hosts
 
 ## Let's Encrypt for HTTPS
 
+### Homebrew (Mac)
+
+Installation instructions https://certbot.eff.org/instructions?ws=other&os=osx
+
+### apt (Linux)
+
+Installation instructions https://certbot.eff.org/instructions?ws=other&os=pip
+
+After installing the certbot, generate the certificates and private keys.
+
 ```
-brew install certbot
 cd nginx/letsencrypt
 sudo certbot certonly --manual --preferred-challenges dns-01 -d your_website.com -d www.your_website.com
 ```
