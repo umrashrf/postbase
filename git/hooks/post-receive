@@ -1,12 +1,15 @@
 #!/bin/sh
 
+set -x
+
 GIT_WORK_TREE="/your/server/your_repo"
 export GIT_WORK_TREE
 
-# Only if you are not using bare repo
-# git reset --hard
+# This is needed for git push based deploy
+git reset --hard
 
 cd $GIT_WORK_TREE
+git checkout .
 cd webapp
 npm install
 npm run build
