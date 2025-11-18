@@ -81,6 +81,21 @@ export function makePostbaseAdminClient({ pool }) {
         return result;
     }
 
+    class AdminDocumentSnapshot {
+        constructor(id, data) {
+            this.id = id;
+            this._data = data;
+        }
+
+        exists() {
+            return !!this._data;
+        }
+
+        data() {
+            return this._data;
+        }
+    }
+
     /* ------------------------------------------------------------------ */
     /*  Document Reference                                                 */
     /* ------------------------------------------------------------------ */
@@ -105,15 +120,20 @@ export function makePostbaseAdminClient({ pool }) {
         async get(client = pool) {
             const sql = `SELECT id, data FROM "${this.table}" WHERE id=$1 LIMIT 1`;
             const result = await runQuery(client, sql, [this.id]);
-            if (!result.rowCount) return null;
+
+            if (!result.rowCount) {
+                return new AdminDocumentSnapshot(this.id, null);
+            }
+
             const row = result.rows[0];
-            return { id: row.id, ...row.data };
+            return new AdminDocumentSnapshot(row.id, row.data);
         }
 
         async set(data, opts = {}, client = pool) {
             const existing = await this.get(client);
+            const base = existing.exists() ? existing.data() : {};
             const finalData = opts.merge
-                ? applyFieldValues(existing || {}, data)
+                ? applyFieldValues(base, data)
                 : applyFieldValues({}, data);
 
             const sql = `
@@ -124,7 +144,7 @@ export function makePostbaseAdminClient({ pool }) {
             RETURNING id, data`;
             const result = await runQuery(client, sql, [this.id, finalData]);
             const row = result.rows[0];
-            return { id: row.id, ...row.data };
+            return new AdminDocumentSnapshot(row.id, row.data);
         }
 
         async update(partial, client = pool) {
@@ -198,7 +218,7 @@ export function makePostbaseAdminClient({ pool }) {
             RETURNING id, data`;
             const result = await runQuery(client, sql, [id, prepared]);
             const row = result.rows[0];
-            return { id: row.id, ...row.data };
+            return new AdminDocumentSnapshot(row.id, row.data);
         }
 
         async getDocs(client = pool) {
@@ -212,7 +232,7 @@ export function makePostbaseAdminClient({ pool }) {
             FROM "${this.table}"
             ${whereSql} ${orderSql} ${limitSql} ${offsetSql}`;
             const result = await runQuery(client, sql, params);
-            return result.rows.map(r => ({ id: r.id, ...r.data }));
+            return result.rows.map(r => new AdminDocumentSnapshot(r.id, r.data));
         }
     }
 
