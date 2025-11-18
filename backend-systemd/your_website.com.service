@@ -1,0 +1,14 @@
+[Unit]
+Description=your_website.com
+After=network.target
+
+[Service]
+ExecStart=node main.js
+Restart=always
+User=your_username
+WorkingDirectory=/home/your_username/my-app-directory/
+Environment="PATH=/path/to/node binary"
+Environment="SOMETHING_ELSE=VALUE"
+
+[Install]
+WantedBy=default.target
