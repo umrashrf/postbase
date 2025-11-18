@@ -23,28 +23,58 @@ export const documentId = (id) => ({ _documentId: id });
 /* ------------------------------------------------------------------ */
 
 export function makePostbaseAdminClient({ pool }) {
-    const ALLOWED_OPS = new Set(['==', '!=', '<', '<=', '>', '>=', 'LIKE', 'ILIKE', 'IN']);
+    const ALLOWED_OPS = new Set([
+        '==',
+        '!=',
+        '<',
+        '<=',
+        '>',
+        '>=',
+        'LIKE',
+        'ILIKE',
+        'IN',
+        'array-contains', // only supports strings "large" in ["red", "blue", "large"]
+    ]);
 
     // === WHERE builder ===
     function buildWhere(filters = []) {
         const whereClauses = [];
         const params = [];
         let idx = 1;
+
         for (const f of filters) {
             const { field, op, value } = f;
             if (!ALLOWED_OPS.has(op)) throw new Error(`Invalid operator: ${op}`);
+
             if (op === 'IN') {
                 if (!Array.isArray(value) || value.length === 0)
                     throw new Error('IN requires non-empty array');
                 const placeholders = value.map(() => `$${idx++}`);
                 params.push(...value);
                 whereClauses.push(`data->>'${field}' IN (${placeholders.join(',')})`);
-            } else {
+            }
+
+            else if (op === 'array-contains') {
+                // JSONB array membership check
                 params.push(value);
-                whereClauses.push(`data->>'${field}' ${op.replace('==', '=')} $${idx++}`);
+                whereClauses.push(`(data->'${field}') ? $${idx++}`);
+            }
+
+            else if (op === 'LIKE' || op === 'ILIKE') {
+                params.push(value);
+                whereClauses.push(`data->>'${field}' ${op} $${idx++}`);
+            }
+
+            else {
+                params.push(value);
+                whereClauses.push(`data->>'${field}' ${op} $${idx++}`);
             }
         }
-        return { whereSql: whereClauses.length ? `WHERE ${whereClauses.join(' AND ')}` : '', params };
+
+        return {
+            whereSql: whereClauses.length ? `WHERE ${whereClauses.join(' AND ')}` : '',
+            params
+        };
     }
 
     // === ORDER builder ===
