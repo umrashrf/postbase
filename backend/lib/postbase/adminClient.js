@@ -161,6 +161,24 @@ export function makePostbaseAdminClient({ pool }) {
         }
     }
 
+    class AdminQuerySnapshot {
+        constructor(docs) {
+            this.docs = docs; // array of AdminDocumentSnapshot
+        }
+
+        forEach(fn) {
+            this.docs.forEach(fn);
+        }
+
+        get empty() {
+            return this.docs.length === 0;
+        }
+
+        get size() {
+            return this.docs.length;
+        }
+    }
+
     /* ------------------------------------------------------------------ */
     /*  Collection Reference                                               */
     /* ------------------------------------------------------------------ */
