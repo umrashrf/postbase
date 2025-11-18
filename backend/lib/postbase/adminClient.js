@@ -312,5 +312,9 @@ export function makePostbaseAdminClient({ pool }) {
         Timestamp,
         FieldPath,
         documentId,
+
+        // need that for websockets
+        buildWhere,
+        buildOrder,
     };
 }
