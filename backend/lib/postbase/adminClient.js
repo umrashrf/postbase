@@ -82,9 +82,10 @@ export function makePostbaseAdminClient({ pool }) {
     }
 
     class AdminDocumentSnapshot {
-        constructor(id, data) {
+        constructor(id, data, ref) {
             this.id = id;
             this._data = data;
+            this.ref = ref;
         }
 
         exists() {
@@ -122,11 +123,11 @@ export function makePostbaseAdminClient({ pool }) {
             const result = await runQuery(client, sql, [this.id]);
 
             if (!result.rowCount) {
-                return new AdminDocumentSnapshot(this.id, null);
+                return new AdminDocumentSnapshot(this.id, null, new DocumentRef(this.table, this.id, this.parentPath));
             }
 
             const row = result.rows[0];
-            return new AdminDocumentSnapshot(row.id, row.data);
+            return new AdminDocumentSnapshot(row.id, row.data, new DocumentRef(this.table, row.id, this.parentPath));
         }
 
         async set(data, opts = {}, client = pool) {
@@ -144,7 +145,7 @@ export function makePostbaseAdminClient({ pool }) {
             RETURNING id, data`;
             const result = await runQuery(client, sql, [this.id, finalData]);
             const row = result.rows[0];
-            return new AdminDocumentSnapshot(row.id, row.data);
+            return new AdminDocumentSnapshot(row.id, row.data, new DocumentRef(this.table, row.id, this.parentPath));
         }
 
         async update(partial, client = pool) {
@@ -236,7 +237,7 @@ export function makePostbaseAdminClient({ pool }) {
             RETURNING id, data`;
             const result = await runQuery(client, sql, [id, prepared]);
             const row = result.rows[0];
-            return new AdminDocumentSnapshot(row.id, row.data);
+            return new AdminDocumentSnapshot(row.id, row.data, new DocumentRef(this.table, row.id, this.parentPath));
         }
 
         async getDocs(client = pool) {
