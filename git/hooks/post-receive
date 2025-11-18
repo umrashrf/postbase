@@ -1,0 +1,14 @@
+#!/bin/sh
+
+GIT_WORK_TREE="/your/server/your_repo"
+export GIT_WORK_TREE
+
+# Only if you are not using bare repo
+# git reset --hard
+
+cd $GIT_WORK_TREE
+cd webapp
+npm install
+npm run build
+
+rsync -avh /your/server/your_repo/dist/ /var/www/html/your_website
