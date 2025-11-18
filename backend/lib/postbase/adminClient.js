@@ -234,6 +234,11 @@ export function makePostbaseAdminClient({ pool }) {
             const result = await runQuery(client, sql, params);
             return result.rows.map(r => new AdminDocumentSnapshot(r.id, r.data));
         }
+
+        async get(client = pool) {
+            const docs = await this.getDocs(client);
+            return new AdminQuerySnapshot(docs);
+        }
     }
 
     /* ------------------------------------------------------------------ */
