@@ -19,7 +19,18 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
     const meta = new MetadataCache(pool);
     const evaluator = makeEvaluator(rulesModule);
 
-    const ALLOWED_OPS = new Set(['==', '!=', '<', '<=', '>', '>=', 'LIKE', 'ILIKE', 'IN']);
+    const ALLOWED_OPS = new Set([
+        '==',
+        '!=',
+        '<',
+        '<=',
+        '>',
+        '>=',
+        'LIKE',
+        'ILIKE',
+        'IN',
+        'array-contains', // only supports strings "large" in ["red", "blue", "large"]
+    ]);
 
     function mapRequest(req) {
         return {
@@ -37,24 +48,40 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
         const whereClauses = [];
         const params = [];
         let idx = 1;
+
         for (const f of filters) {
             const { field, op, value } = f;
             if (!ALLOWED_OPS.has(op)) throw new Error(`Invalid operator: ${op}`);
+
             if (op === 'IN') {
                 if (!Array.isArray(value) || value.length === 0)
                     throw new Error('IN requires non-empty array');
                 const placeholders = value.map(() => `$${idx++}`);
                 params.push(...value);
                 whereClauses.push(`data->>'${field}' IN (${placeholders.join(',')})`);
-            } else if (op === 'LIKE' || op === 'ILIKE') {
+            }
+
+            else if (op === 'array-contains') {
+                // JSONB array membership check
+                params.push(value);
+                whereClauses.push(`(data->'${field}') ? $${idx++}`);
+            }
+
+            else if (op === 'LIKE' || op === 'ILIKE') {
                 params.push(value);
                 whereClauses.push(`data->>'${field}' ${op} $${idx++}`);
-            } else {
+            }
+
+            else {
                 params.push(value);
                 whereClauses.push(`data->>'${field}' ${op} $${idx++}`);
             }
         }
-        return { whereSql: whereClauses.length ? `WHERE ${whereClauses.join(' AND ')}` : '', params };
+
+        return {
+            whereSql: whereClauses.length ? `WHERE ${whereClauses.join(' AND ')}` : '',
+            params
+        };
     }
 
     // ORDER BY builder — JSON field order
