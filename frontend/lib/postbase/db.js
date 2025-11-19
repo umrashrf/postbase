@@ -346,7 +346,7 @@ class QueryBuilder {
 
     where(field, op, value) {
         let _value = value;
-        if (instanceof value === Timestamp) {
+        if (value.hasOwnProperty('toString') && typeof value.toString === 'function') {
             _value = value.toString();
         }
         this._filters.push({ field, op, value: _value });
