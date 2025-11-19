@@ -443,6 +443,8 @@ class QueryBuilder {
                         );
                     });
                     callback(new QuerySnapshot(docs));
+                } else if (msg.type === 'error') {
+                    errorCallback(msg);
                 }
             } catch (err) {
                 if (typeof errorCallback === 'function') errorCallback(err);
@@ -454,6 +456,9 @@ class QueryBuilder {
             if (typeof errorCallback === 'function') errorCallback(err);
             else console.error('onSnapshot websocket error:', err);
         };
+
+        // ws.onclose = event => {
+        // };
 
         return () => ws.close(); // return unsubscribe function
     }
