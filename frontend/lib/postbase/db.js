@@ -159,11 +159,6 @@ function deserializeRefs(db, obj) {
     }
 
     if (obj && typeof obj === 'object') {
-        //Detect timestamp object sent by backend/admin client
-        if (obj._type === 'timestamp' && typeof obj.iso === 'string') {
-            return Timestamp.fromPostgres(obj.iso);
-        }
-
         // Detect PostgreSQL TIMESTAMPTZ returned as strings
         if (isIsoDateString(obj)) {
             return Timestamp.fromPostgres(obj);
