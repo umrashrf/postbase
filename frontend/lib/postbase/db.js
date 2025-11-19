@@ -433,6 +433,16 @@ class QueryBuilder {
             headers: { 'content-type': 'application/json', ...headers },
             body: JSON.stringify(queryBody),
         });
+
+        if (!res.ok) {
+            const errorData = await res.json();
+            if (errorData.hasOwnProperty('error') && errorData.error === 'not_found') {
+                return new DocumentsSnapshot([]);
+            } else {
+                throw new Error(`HTTP error! Status: ${res.status}, Details: ${JSON.stringify(errorData)}`);
+            }
+        }
+
         const json = await toJsonOrThrow(res);
 
         // Map each document to a DocumentSnapshot
