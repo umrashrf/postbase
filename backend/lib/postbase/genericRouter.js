@@ -189,10 +189,10 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
             const payload = req.body || {};
 
             let current = payload;
-            current.id = id; // for rules engine
             if (existing.rowCount) {
                 current = existing.rows[0].data;
             }
+            current.id = id; // for rules engine
 
             const request = mapRequest(req);
             request.resource = current;
