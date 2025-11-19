@@ -426,7 +426,7 @@ class QueryBuilder {
 
         // Map each document to a DocumentSnapshot
         const docs = (json.data || []).map((doc) => {
-            const data = deserializeRefs(this.collectionRef.db, doc.data || {});
+            const data = deserializeRefs(this.collectionRef.db, doc.data || doc || {});
             return new DocumentSnapshot(doc.id, data, `${this.collectionRef.fullPath}/${doc.id}`, this.collectionRef.db);
         });
         return new DocumentsSnapshot(docs);
