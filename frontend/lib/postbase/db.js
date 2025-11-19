@@ -224,7 +224,7 @@ class DocumentSnapshot {
         return this._path;
     }
 
-    exists() {
+    get exists() {
         return !!this._data;
     }
 }
