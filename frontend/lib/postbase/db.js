@@ -89,7 +89,11 @@ class CollectionReference {
             body: JSON.stringify(serializeRefs(data))
         });
         const json = await toJsonOrThrow(res);
-        return json.data;
+        const _data = json.data;
+        if (_data && _data.hasOwnProperty('id')) {
+            return this.doc(_data.id);
+        }
+        return _data;
     }
 
     /** Directly get all docs (no filters) */
@@ -422,14 +426,19 @@ class QueryBuilder {
             .replace(/^https?/, 'wss')
             + `/${this.collectionRef.fullPath}/stream`;
 
+        //console.log(`Requesting a new web socket connection`, wsUrl);
         const ws = new WebSocket(wsUrl);
 
-        ws.onopen = () => {
+        ws.onopen = (event) => {
+            //console.log('ws.onopen', event);
             const queryBody = this.build();
+            //console.log('Sending query...', queryBody);
             ws.send(JSON.stringify(queryBody)); // send query definition once
+            //console.log('Sent query success');
         };
 
         ws.onmessage = (event) => {
+            //console.log('ws.onmessage');
             try {
                 const msg = JSON.parse(event.data);
                 if (msg.type === 'init' || msg.type === 'change') {
@@ -453,12 +462,14 @@ class QueryBuilder {
         };
 
         ws.onerror = (err) => {
+            //console.log('ws.onerror');
             if (typeof errorCallback === 'function') errorCallback(err);
             else console.error('onSnapshot websocket error:', err);
         };
 
-        // ws.onclose = event => {
-        // };
+        ws.onclose = event => {
+            //console.log('ws.onclose', event);
+        };
 
         return () => ws.close(); // return unsubscribe function
     }
