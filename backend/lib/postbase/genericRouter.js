@@ -56,6 +56,19 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
         return out;
     }
 
+    function isTimestampRef(value) {
+        return value &&
+            typeof value === "object" &&
+            value._type === "timestamp" &&
+            typeof value.seconds === "number" &&
+            typeof value.nanoseconds === "number";
+    }
+
+    function convertTimestamp(value) {
+        const ms = value.seconds * 1000 + Math.floor(value.nanoseconds / 1e6);
+        return new Date(ms).toISOString();  // Postgres understands ISO 8601
+    }
+
     function mapRequest(req) {
         return {
             auth: req[authField] || null,
@@ -77,6 +90,21 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
             const { field, op, value } = f;
             if (!ALLOWED_OPS.has(op)) throw new Error(`Invalid operator: ${op}`);
 
+            //  ----- NEW: timestamp handling ----- 
+            if (isTimestampRef(value)) {
+                const ts = convertTimestamp(value);
+                params.push(ts);
+
+                // "==" becomes "=" for SQL
+                const sqlOp = op === "==" ? "=" : op;
+
+                whereClauses.push(`(data->>'${field}')::timestamptz ${sqlOp} $${idx++}`);
+                continue;
+            }
+            //  ----- END timestamp handling ----- 
+
+
+            // IN
             if (op === 'IN') {
                 if (!Array.isArray(value) || value.length === 0)
                     throw new Error('IN requires non-empty array');
@@ -85,20 +113,23 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
                 whereClauses.push(`data->>'${field}' IN (${placeholders.join(',')})`);
             }
 
+            // array-contains
             else if (op === 'array-contains') {
-                // JSONB array membership check
                 params.push(value);
                 whereClauses.push(`(data->'${field}') ? $${idx++}`);
             }
 
+            // LIKE / ILIKE
             else if (op === 'LIKE' || op === 'ILIKE') {
                 params.push(value);
                 whereClauses.push(`data->>'${field}' ${op} $${idx++}`);
             }
 
+            // default (string or primitive)
             else {
+                const sqlOp = op === "==" ? "=" : op;
                 params.push(value);
-                whereClauses.push(`data->>'${field}' ${op} $${idx++}`);
+                whereClauses.push(`data->>'${field}' ${sqlOp} $${idx++}`);
             }
         }
 
