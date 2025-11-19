@@ -346,7 +346,11 @@ class QueryBuilder {
 
     where(field, op, value) {
         let _value = value;
-        if (value.hasOwnProperty('toString') && typeof value.toString === 'function') {
+        if (typeof value === 'object'
+            && value !== null
+            && value.hasOwnProperty('_type')
+            && value._type === 'timestamp'
+            && 'toString' in value) {
             _value = value.toString();
         }
         this._filters.push({ field, op, value: _value });
