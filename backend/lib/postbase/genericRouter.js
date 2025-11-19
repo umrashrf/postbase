@@ -166,7 +166,11 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
 
             const row = result.rows[0];
             const request = mapRequest(req);
-            const allowed = await evaluator.evaluate(table, 'read', request, row.data);
+            const payload = {
+                id,
+                ...row.data,
+            };
+            const allowed = await evaluator.evaluate(table, 'read', request, payload);
             if (!allowed) return res.status(403).json({ error: 'forbidden' });
 
             res.json({ data: { id: row.id, ...row.data } });
@@ -226,6 +230,7 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
             const existing = await runQuery(pool, `SELECT data FROM "${table}" WHERE id=$1 LIMIT 1`, [id]);
             if (!existing.rowCount) return res.status(404).json({ error: 'not_found' });
             const current = existing.rows[0].data;
+            current.id = id; // for rules engine
 
             const request = mapRequest(req);
             request.resource = current;
@@ -257,6 +262,7 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
             if (!existing.rowCount) return res.status(404).json({ error: 'not_found' });
 
             const current = existing.rows[0].data;
+            current.id = id; // for rules engine
             const request = mapRequest(req);
             request.resource = current;
             const allowed = await evaluator.evaluate(table, 'delete', request, current);
