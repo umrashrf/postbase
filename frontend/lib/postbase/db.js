@@ -255,7 +255,7 @@ class DocumentReference {
         if (!res.ok) {
             const errorData = await res.json();
             if (errorData.hasOwnProperty('error') && errorData.error === 'not_found') {
-                return new DocumentSnapshot(this.id, null, this.fullPath, this.db);
+                return null;
             }
         }
         const json = await toJsonOrThrow(res);
