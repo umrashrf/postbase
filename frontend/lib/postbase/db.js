@@ -164,6 +164,14 @@ function deserializeRefs(db, obj) {
             return Timestamp.fromPostgres(obj);
         }
 
+        if (obj.hasOwnProperty('_type')
+            && obj._type === 'ref'
+            && obj.hasOwnProperty('path')
+            && obj.path) {
+            const [collectionName, id] = obj.path.split('/');
+            return new DocumentReference(db, collectionName, id);
+        }
+
         const out = {};
         for (const [k, v] of Object.entries(obj)) {
             out[k] = deserializeRefs(db, v);
