@@ -134,7 +134,7 @@ function serializeRefs(obj) {
 
     //NEW: If Timestamp instance, send canonical structure
     if (obj instanceof Timestamp) {
-        return { _type: 'timestamp', iso: obj.toString() };
+        return obj.toString();
     }
 
     if (Array.isArray(obj)) return obj.map(serializeRefs);
@@ -345,7 +345,11 @@ class QueryBuilder {
     }
 
     where(field, op, value) {
-        this._filters.push({ field, op, value });
+        let _value = value;
+        if (instanceof value === Timestamp) {
+            _value = value.toString();
+        }
+        this._filters.push({ field, op, value: _value });
         return this;
     }
 

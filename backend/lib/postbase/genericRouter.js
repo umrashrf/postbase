@@ -43,19 +43,6 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
         return `${ref.collectionName}/${ref.id}`;
     }
 
-    function isTimestampRef(value) {
-        return value &&
-            typeof value === "object" &&
-            value._type === "timestamp" &&
-            typeof value.seconds === "number" &&
-            typeof value.nanoseconds === "number";
-    }
-
-    function convertTimestamp(value) {
-        const ms = value.seconds * 1000 + Math.floor(value.nanoseconds / 1e6);
-        return new Date(ms).toISOString();  // Postgres understands ISO 8601
-    }
-
     function mapRequest(req) {
         return {
             auth: req[authField] || null,
@@ -77,26 +64,12 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
             const { field, op, value } = f;
             if (!ALLOWED_OPS.has(op)) throw new Error(`Invalid operator: ${op}`);
 
-            const sqlOp = op === "==" ? "=" : op;
-
             if (isDocumentRef(value)) {
+                const sqlOp = op === "==" ? "=" : op;
                 params.push(resolveReference(value));
                 whereClauses.push(`data->'${field}'->>'path' ${sqlOp} $${idx++}`);
                 continue;
             }
-
-            if (isTimestampRef(value)) {
-                const ts = convertTimestamp(value);
-                params.push(ts);
-
-                // "==" becomes "=" for SQL
-                const sqlOp = op === "==" ? "=" : op;
-
-                whereClauses.push(`(data->>'${field}')::timestamptz ${sqlOp} $${idx++}`);
-                continue;
-            }
-            //  ----- END timestamp handling ----- 
-
 
             // IN
             if (op === 'IN') {
