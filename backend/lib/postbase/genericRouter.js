@@ -302,5 +302,217 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
         }
     });
 
+    // ======================================================
+    // =============== SUBCOLLECTION SUPPORT =================
+    // ======================================================
+    //
+    // Pattern supported:
+    //
+    //   /:parentTable/:parentId/:subTable        (query / create)
+    //   /:parentTable/:parentId/:subTable/:id    (read / update / delete)
+    //
+    // Assumes subcollection rows contain:
+    //
+    //   data.parent = {
+    //       collectionName: "<parentTable>",
+    //       id: "<parentId>"
+    //   }
+    //
+    // You can rename this field if needed.
+    // ======================================================
+
+    // --- LIST / QUERY subcollection ---
+    router.post('/:parentTable/:parentId/:subTable/query', async (req, res) => {
+        const { parentTable, parentId, subTable } = req.params;
+        try {
+            const request = mapRequest(req);
+
+            // Evaluate access for subcollection as if it were its own table
+            const allowed = await evaluator.evaluate(subTable, 'read', request, null);
+            if (!allowed) return res.status(403).json({ error: 'forbidden' });
+
+            const { filters = [], order = [], limit = 100, offset = 0 } = req.body || {};
+
+            // Always force parent filter
+            filters.push({
+                field: 'parent',
+                op: '==',
+                value: { collectionName: parentTable, id: parentId }
+            });
+
+            let { whereSql, params } = buildWhere(filters);
+            whereSql = whereSql.replace(/\=\=/g, '=');
+            const orderSql = buildOrder(order);
+            const limitSql = Number(limit) > 0 ? `LIMIT ${Number(limit)}` : '';
+            const offsetSql = Number(offset) > 0 ? `OFFSET ${Number(offset)}` : '';
+
+            const sql = `
+            SELECT id, data, created_at, updated_at
+            FROM "${subTable}"
+            ${whereSql} ${orderSql} ${limitSql} ${offsetSql}`;
+
+            const result = await runQuery(pool, sql, params);
+
+            const out = [];
+            for (const r of result.rows || []) {
+                const resource = r.data;
+                const ok = await evaluator.evaluate(subTable, 'read', request, resource);
+                if (ok) out.push({ id: r.id, ...resource });
+            }
+
+            return res.json({ data: out });
+        } catch (err) {
+            console.error(err);
+            res.status(400).json({ error: "Internal Error Occurred" });
+        }
+    });
+
+    // --- CREATE subcollection ---
+    router.post('/:parentTable/:parentId/:subTable', async (req, res) => {
+        const { parentTable, parentId, subTable } = req.params;
+        try {
+            const payload = req.body || {};
+
+            // enforce parent link
+            payload.parent = {
+                collectionName: parentTable,
+                id: parentId
+            };
+
+            const request = mapRequest(req);
+            request.resource = payload;
+
+            const allowed = await evaluator.evaluate(subTable, 'create', request, payload);
+            if (!allowed) return res.status(403).json({ error: 'forbidden' });
+
+            const sql = `
+            INSERT INTO "${subTable}" (data)
+            VALUES ($1)
+            RETURNING id, data, created_at, updated_at`;
+
+            const result = await runQuery(pool, sql, [payload]);
+            const row = result.rows[0];
+
+            res.status(201).json({ data: { id: row.id, ...row.data } });
+        } catch (err) {
+            console.error(err);
+            res.status(400).json({ error: "Internal Error Occurred" });
+        }
+    });
+
+    // --- READ subcollection item ---
+    router.get('/:parentTable/:parentId/:subTable/:id', async (req, res) => {
+        const { parentTable, parentId, subTable, id } = req.params;
+        try {
+            const sql = `
+            SELECT id, data
+            FROM "${subTable}"
+            WHERE id = $1 LIMIT 1`;
+            const result = await runQuery(pool, sql, [id]);
+            if (!result.rowCount) return res.status(404).json({ error: 'not_found' });
+
+            const row = result.rows[0];
+
+            // validate belongs to parent
+            if (!row.data.parent ||
+                row.data.parent.collectionName !== parentTable ||
+                row.data.parent.id !== parentId) {
+                return res.status(404).json({ error: 'not_found' });
+            }
+
+            const request = mapRequest(req);
+            const resource = { id, ...row.data };
+
+            const allowed = await evaluator.evaluate(subTable, 'read', request, resource);
+            if (!allowed) return res.status(403).json({ error: 'forbidden' });
+
+            res.json({ data: { id, ...row.data } });
+        } catch (err) {
+            console.error(err);
+            res.status(400).json({ error: "Internal Error Occurred" });
+        }
+    });
+
+    // --- UPDATE subcollection ---
+    router.put('/:parentTable/:parentId/:subTable/:id', async (req, res) => {
+        const { parentTable, parentId, subTable, id } = req.params;
+        try {
+            const existing = await runQuery(
+                pool,
+                `SELECT data FROM "${subTable}" WHERE id=$1 LIMIT 1`,
+                [id]
+            );
+            if (!existing.rowCount) return res.status(404).json({ error: 'not_found' });
+
+            const current = existing.rows[0].data;
+
+            // enforce parent link
+            if (!current.parent ||
+                current.parent.collectionName !== parentTable ||
+                current.parent.id !== parentId)
+                return res.status(404).json({ error: 'not_found' });
+
+            current.id = id;
+
+            const request = mapRequest(req);
+            request.resource = current;
+
+            const allowed = await evaluator.evaluate(subTable, 'update', request, current);
+            if (!allowed) return res.status(403).json({ error: 'forbidden' });
+
+            const payload = req.body || {};
+            payload.parent = current.parent; // prevent overriding parent
+
+            const sql = `
+            UPDATE "${subTable}"
+            SET data = $1, updated_at = now() at time zone 'UTC'
+            WHERE id = $2
+            RETURNING id, data`;
+
+            const result = await runQuery(pool, sql, [payload, id]);
+            const row = result.rows[0];
+
+            res.json({ data: { id, ...row.data } });
+        } catch (err) {
+            console.error(err);
+            res.status(400).json({ error: "Internal Error Occurred" });
+        }
+    });
+
+    // --- DELETE subcollection ---
+    router.delete('/:parentTable/:parentId/:subTable/:id', async (req, res) => {
+        const { parentTable, parentId, subTable, id } = req.params;
+        try {
+            const existing = await runQuery(
+                pool,
+                `SELECT data FROM "${subTable}" WHERE id=$1 LIMIT 1`,
+                [id]
+            );
+            if (!existing.rowCount) return res.status(404).json({ error: 'not_found' });
+
+            const current = existing.rows[0].data;
+
+            if (!current.parent ||
+                current.parent.collectionName !== parentTable ||
+                current.parent.id !== parentId)
+                return res.status(404).json({ error: 'not_found' });
+
+            current.id = id;
+
+            const request = mapRequest(req);
+            request.resource = current;
+
+            const allowed = await evaluator.evaluate(subTable, 'delete', request, current);
+            if (!allowed) return res.status(403).json({ error: 'forbidden' });
+
+            const result = await runQuery(pool, `DELETE FROM "${subTable}" WHERE id=$1 RETURNING id`, [id]);
+            res.json({ data: { id: result.rows[0].id } });
+        } catch (err) {
+            console.error(err);
+            res.status(400).json({ error: "Internal Error Occurred" });
+        }
+    });
+
+
     return router;
 }
