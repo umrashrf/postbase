@@ -263,7 +263,7 @@ class DocumentReference {
         if (opts.merge) {
             try {
                 const existing = await this.get();
-                finalData = { ...(existing || {}), ...data };
+                finalData = { ...(existing.data() || {}), ...data };
             } catch (err) {
                 // If doc doesn't exist, just create it
                 finalData = data;
