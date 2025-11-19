@@ -32,6 +32,30 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
         'array-contains', // only supports strings "large" in ["red", "blue", "large"]
     ]);
 
+    function isDocumentRef(value) {
+        return value &&
+            typeof value === "object" &&
+            value.collectionName &&
+            value.id;
+    }
+
+    async function resolveReference(value) {
+        return value.collectionName + '/' + value.id;
+    }
+
+    async function preprocessFilters(pool, filters) {
+        const out = [];
+        for (const f of filters) {
+            if (isDocumentRef(f.value)) {
+                const resolvedValue = await resolveReference(f.value);
+                out.push({ ...f, value: resolvedValue });
+            } else {
+                out.push(f);
+            }
+        }
+        return out;
+    }
+
     function mapRequest(req) {
         return {
             auth: req[authField] || null,
@@ -104,7 +128,8 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
             const allowed = await evaluator.evaluate(table, 'read', request, null);
             if (!allowed) return res.status(403).json({ error: 'forbidden' });
 
-            const { filters = [], order = [], limit = 100, offset = 0 } = req.body || {};
+            let { filters = [], order = [], limit = 100, offset = 0 } = req.body || {};
+            filters = await preprocessFilters(pool, filters);
 
             let { whereSql, params } = buildWhere(filters);
             whereSql = whereSql.replace(/\=\=/g, '=');
@@ -196,6 +221,9 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
 
             const request = mapRequest(req);
             request.resource = current;
+
+            console.log('request.auth.id', request.auth.id);
+            console.log('current.id', current.id);
 
             const allowed = await evaluator.evaluate(table, 'update', request, current);
             if (!allowed) return res.status(403).json({ error: 'forbidden' });
