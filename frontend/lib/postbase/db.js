@@ -134,7 +134,7 @@ function serializeRefs(obj) {
 
     //NEW: If Timestamp instance, send canonical structure
     if (obj instanceof Timestamp) {
-        return { _type: 'timestamp', iso: obj.iso };
+        return { _type: 'timestamp', iso: obj.toString() };
     }
 
     if (Array.isArray(obj)) return obj.map(serializeRefs);
