@@ -252,6 +252,12 @@ class DocumentReference {
         const url = `${this.db.baseUrl}/${this.fullPath}`;
         const headers = await this.db.getHeaders();
         const res = await fetch(url, { headers });
+        if (!res.ok) {
+            const errorData = await res.json();
+            if (errorData.hasOwnProperty('error') && errorData.error === 'not_found') {
+                return new DocumentSnapshot(this.id, null, this.fullPath, this.db);
+            }
+        }
         const json = await toJsonOrThrow(res);
         const data = deserializeRefs(this.db, json.data || {});
         return new DocumentSnapshot(this.id, data, this.fullPath, this.db);
