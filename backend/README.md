@@ -31,6 +31,8 @@ npm install
 npm run migrate:up
 ```
 
+* Note: Because of PostgreSQL's pg_notify() function, JSONB data is limited to 8000 bytes (1 char = 1 byte). To avoid this limitation, do not use 3rd migration.
+
 Learn more from https://synvinkel.org/notes/node-postgres-migrations
 
 ## Local (HTTP)
