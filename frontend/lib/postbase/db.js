@@ -184,6 +184,17 @@ function deserializeRefs(db, obj) {
     return obj;
 }
 
+class DocumentsSnapshot {
+    constructor(docs) {
+        this.docs = docs;        // array of DocumentSnapshot
+        this.size = docs.length; // convenience property
+        this.empty = docs.length === 0;
+    }
+
+    forEach(callback) {
+        this.docs.forEach(callback);
+    }
+}
 
 class DocumentSnapshot {
     constructor(id, data, path, db) {
@@ -418,7 +429,7 @@ class QueryBuilder {
             const data = deserializeRefs(this.collectionRef.db, doc.data || {});
             return new DocumentSnapshot(doc.id, data, `${this.collectionRef.fullPath}/${doc.id}`, this.collectionRef.db);
         });
-        return docs;
+        return new DocumentsSnapshot(docs);
     }
 
     onSnapshot(callback, errorCallback) {
