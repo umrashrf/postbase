@@ -39,21 +39,8 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
             value.id;
     }
 
-    async function resolveReference(value) {
-        return value.collectionName + '/' + value.id;
-    }
-
-    async function preprocessFilters(pool, filters) {
-        const out = [];
-        for (const f of filters) {
-            if (isDocumentRef(f.value)) {
-                const resolvedValue = await resolveReference(f.value);
-                out.push({ ...f, value: resolvedValue });
-            } else {
-                out.push(f);
-            }
-        }
-        return out;
+    function resolveReference(ref) {
+        return `${ref.collectionName}/${ref.id}`;
     }
 
     function isTimestampRef(value) {
@@ -90,7 +77,14 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
             const { field, op, value } = f;
             if (!ALLOWED_OPS.has(op)) throw new Error(`Invalid operator: ${op}`);
 
-            //  ----- NEW: timestamp handling ----- 
+            const sqlOp = op === "==" ? "=" : op;
+
+            if (isDocumentRef(value)) {
+                params.push(resolveReference(value));
+                whereClauses.push(`data->'${field}'->>'path' ${sqlOp} $${idx++}`);
+                continue;
+            }
+
             if (isTimestampRef(value)) {
                 const ts = convertTimestamp(value);
                 params.push(ts);
@@ -159,8 +153,7 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
             const allowed = await evaluator.evaluate(table, 'read', request, null);
             if (!allowed) return res.status(403).json({ error: 'forbidden' });
 
-            let { filters = [], order = [], limit = 100, offset = 0 } = req.body || {};
-            filters = await preprocessFilters(pool, filters);
+            const { filters = [], order = [], limit = 100, offset = 0 } = req.body || {};
 
             let { whereSql, params } = buildWhere(filters);
             whereSql = whereSql.replace(/\=\=/g, '=');
