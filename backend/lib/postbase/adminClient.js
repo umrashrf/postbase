@@ -79,11 +79,13 @@ export const FieldValue = {
 export const FieldPath = (path) => ({ _fieldPath: path });
 export const documentId = (id) => ({ _documentId: id });
 
-/* ------------------------------------------------------------------ */
-/*  Postbase Admin Client (Firestore-like for Postgres JSONB)          */
-/* ------------------------------------------------------------------ */
+/* ======================================================================= */
+/*  Admin Client Factory                                                   */
+/* ======================================================================= */
 
 export function makePostbaseAdminClient({ pool }) {
+    let self = null;
+
     const ALLOWED_OPS = new Set([
         '==',
         '!=',
@@ -99,57 +101,46 @@ export function makePostbaseAdminClient({ pool }) {
 
     // === WHERE builder ===
     function buildWhere(filters = []) {
-        const whereClauses = [];
+        const where = [];
         const params = [];
-        let idx = 1;
+        let i = 1;
 
         for (const f of filters) {
             const { field, op, value } = f;
-            const sqlOp = op === '==' ? '=' : op;
+            const sqlOp = op === "==" ? "=" : op;
 
-            // Detect parent/document references
-            if (value && typeof value === 'object' && value.collectionName && value.id) {
-                const path = value.path || `${value.collectionName}/${value.id}`;
-                params.push(path);
-                whereClauses.push(`data->'${field}'->>'path' ${sqlOp} $${idx++}`);
+            // reference compare
+            if (value && value._type === "ref") {
+                params.push(value.path);
+                where.push(`data->'${field}'->>'path' ${sqlOp} $${i++}`);
                 continue;
             }
 
-            // IN operator
-            if (op === 'IN') {
-                if (!Array.isArray(value) || value.length === 0) throw new Error('IN requires non-empty array');
-                const placeholders = value.map(() => `$${idx++}`);
+            if (op === "IN") {
+                if (!Array.isArray(value)) throw new Error("IN requires array");
+                const ph = value.map(() => `$${i++}`).join(",");
                 params.push(...value);
-                whereClauses.push(`data->>'${field}' IN (${placeholders.join(',')})`);
+                where.push(`data->>'${field}' IN (${ph})`);
                 continue;
             }
 
-            // array-contains
-            if (op === 'array-contains') {
-                if (value && typeof value === 'object' && value._type === 'ref') {
+            if (op === "array-contains") {
+                if (value && value._type === "ref") {
                     params.push(JSON.stringify([value]));
-                    whereClauses.push(`data->'${field}' @> $${idx++}::jsonb`);
-                    continue;
+                    where.push(`data->'${field}' @> $${i++}::jsonb`);
+                } else {
+                    params.push(value);
+                    where.push(`(data->'${field}') ? $${i++}`);
                 }
-                params.push(value);
-                whereClauses.push(`(data->'${field}') ? $${idx++}`);
                 continue;
             }
 
-            // LIKE / ILIKE
-            if (op === 'LIKE' || op === 'ILIKE') {
-                params.push(value);
-                whereClauses.push(`data->>'${field}' ${op} $${idx++}`);
-                continue;
-            }
-
-            // Default primitive comparison
             params.push(value);
-            whereClauses.push(`data->>'${field}' ${sqlOp} $${idx++}`);
+            where.push(`data->>'${field}' ${sqlOp} $${i++}`);
         }
 
         return {
-            whereSql: whereClauses.length ? `WHERE ${whereClauses.join(' AND ')}` : '',
+            whereSql: where.length ? "WHERE " + where.join(" AND ") : "",
             params,
         };
     }
@@ -168,30 +159,46 @@ export function makePostbaseAdminClient({ pool }) {
         const now = new Date().toISOString();
         const result = { ...target };
 
-        for (const [key, val] of Object.entries(updates)) {
-            if (val && typeof val === 'object') {
-                if (val._op === 'increment') {
-                    const prev = Number(result[key] || 0);
-                    result[key] = prev + val.by;
-                } else if (val._op === 'serverTimestamp') {
-                    result[key] = now;
-                } else if (val._type === 'timestamp') {
-                    result[key] = val.iso;
-                } else {
-                    result[key] = val;
-                }
-            } else {
-                result[key] = val;
+        for (const [k, v] of Object.entries(updates)) {
+            if (!v || typeof v !== "object") {
+                result[k] = v;
+                continue;
             }
+
+            if (v._op === "increment") {
+                result[k] = Number(result[k] || 0) + v.by;
+                continue;
+            }
+
+            if (v._op === "serverTimestamp") {
+                result[k] = now;
+                continue;
+            }
+
+            if (v instanceof Timestamp) {
+                result[k] = v.toString();
+                continue;
+            }
+
+            if (v._type === "ref") {
+                result[k] = { _type: "ref", path: v.path };
+                continue;
+            }
+
+            result[k] = serializeForWrite(v);
         }
 
         return result;
     }
 
+    /* =================================================================== */
+    /* Snapshot classes                                                    */
+    /* =================================================================== */
+
     class AdminDocumentSnapshot {
         constructor(id, data, ref) {
             this.id = id;
-            this._data = data;
+            this._data = adminDeserialize(data);
             this.ref = ref;
         }
 
@@ -202,6 +209,15 @@ export function makePostbaseAdminClient({ pool }) {
         data() {
             return this._data;
         }
+    }
+
+    class AdminQuerySnapshot {
+        constructor(docs) {
+            this.docs = docs;
+        }
+        forEach(fn) { this.docs.forEach(fn); }
+        get empty() { return this.docs.length === 0; }
+        get size() { return this.docs.length; }
     }
 
     /* ------------------------------------------------------------------ */
@@ -226,23 +242,23 @@ export function makePostbaseAdminClient({ pool }) {
         }
 
         async get(client = pool) {
-            const sql = `SELECT id, data FROM "${this.table}" WHERE id=$1 LIMIT 1`;
+            const sql = `SELECT id, data FROM "${this.table}" WHERE id = $1 LIMIT 1`;
+            console.log(`Executing: ${sql}`);
+            console.log(`with params ${this.id}`)
             const result = await runQuery(client, sql, [this.id]);
 
             if (!result.rowCount) {
-                return new AdminDocumentSnapshot(this.id, null, new DocumentRef(this.table, this.id, this.parentPath));
+                return new AdminDocumentSnapshot(this.id, null, this);
             }
 
             const row = result.rows[0];
-            return new AdminDocumentSnapshot(row.id, row.data, new DocumentRef(this.table, row.id, this.parentPath));
+            return new AdminDocumentSnapshot(row.id, row.data, this);
         }
 
         async set(data, opts = {}, client = pool) {
             const existing = await this.get(client);
-            const base = existing.exists() ? existing.data() : {};
-            const finalData = opts.merge
-                ? applyFieldValues(base, data)
-                : applyFieldValues({}, data);
+            const base = opts.merge && existing.exists() ? existing.data() : {};
+            const finalData = applyFieldValues(base, serializeForWrite(data));
 
             const sql = `
             INSERT INTO "${this.table}" (id, data)
@@ -252,38 +268,20 @@ export function makePostbaseAdminClient({ pool }) {
             RETURNING id, data`;
             const result = await runQuery(client, sql, [this.id, finalData]);
             const row = result.rows[0];
-            return new AdminDocumentSnapshot(row.id, row.data, new DocumentRef(this.table, row.id, this.parentPath));
+            return new AdminDocumentSnapshot(row.id, row.data, this);
         }
 
         async update(partial, client = pool) {
             const existing = await this.get(client);
-            if (!existing) return null;
-            const merged = applyFieldValues(existing, partial);
-            return await this.set(merged, { merge: true }, client);
+            if (!existing.exists()) throw new Error("Document does not exist");
+            const merged = applyFieldValues(existing.data(), serializeForWrite(partial));
+            return await this.set(merged, { merge: false }, client);
         }
 
         async delete(client = pool) {
             const sql = `DELETE FROM "${this.table}" WHERE id=$1 RETURNING id`;
-            const result = await runQuery(client, sql, [this.id]);
-            return result.rowCount ? result.rows[0].id : null;
-        }
-    }
-
-    class AdminQuerySnapshot {
-        constructor(docs) {
-            this.docs = docs; // array of AdminDocumentSnapshot
-        }
-
-        forEach(fn) {
-            this.docs.forEach(fn);
-        }
-
-        get empty() {
-            return this.docs.length === 0;
-        }
-
-        get size() {
-            return this.docs.length;
+            const r = await runQuery(client, sql, [this.id]);
+            return r.rowCount ? r.rows[0].id : null;
         }
     }
 
@@ -316,11 +314,15 @@ export function makePostbaseAdminClient({ pool }) {
         }
 
         where(field, op, value) {
+            if (value && typeof value === "object" && value.fullPath) {
+                // DocumentRef inbound (admin)
+                value = { _type: "ref", path: value.fullPath };
+            }
             this._filters.push({ field, op, value });
             return this;
         }
 
-        orderBy(field, dir = 'asc') {
+        orderBy(field, dir = "asc") {
             this._order.push({ field, dir });
             return this;
         }
@@ -337,28 +339,26 @@ export function makePostbaseAdminClient({ pool }) {
 
         async add(data, client = pool) {
             const id = randomUUID();
-            const prepared = applyFieldValues({}, data);
-            const sql = `
-            INSERT INTO "${this.table}" (id, data)
-            VALUES ($1, $2)
-            RETURNING id, data`;
-            const result = await runQuery(client, sql, [id, prepared]);
-            const row = result.rows[0];
+            const prepared = applyFieldValues({}, serializeForWrite(data));
+
+            const sql = `INSERT INTO "${this.table}" (id, data) VALUES ($1, $2) RETURNING id, data;`;
+            const r = await runQuery(client, sql, [id, prepared]);
+            const row = r.rows[0];
             return new AdminDocumentSnapshot(row.id, row.data, new DocumentRef(this.table, row.id, this.parentPath));
         }
 
         async getDocs(client = pool) {
             const { whereSql, params } = buildWhere(this._filters);
             const orderSql = buildOrder(this._order);
-            const limitSql = this._limit ? `LIMIT ${Number(this._limit)}` : '';
-            const offsetSql = this._offset ? `OFFSET ${Number(this._offset)}` : '';
+            const limitSql = this._limit ? `LIMIT ${this._limit}` : "";
+            const offsetSql = this._offset ? `OFFSET ${this._offset}` : "";
 
             const sql = `
             SELECT id, data, created_at, updated_at
             FROM "${this.table}"
             ${whereSql} ${orderSql} ${limitSql} ${offsetSql}`;
             const result = await runQuery(client, sql, params);
-            return result.rows.map(r => new AdminDocumentSnapshot(r.id, r.data));
+            return result.rows.map(r => new AdminDocumentSnapshot(r.id, r.data, new DocumentRef(this.table, r.id, this.parentPath)));
         }
 
         async get(client = pool) {
@@ -371,46 +371,94 @@ export function makePostbaseAdminClient({ pool }) {
     /*  Transaction Support (Firestore-style)                              */
     /* ------------------------------------------------------------------ */
     async function runTransaction(fn, client = pool) {
+        await client.query("BEGIN");
+        const ops = [];
+
+        const tx = {
+            get: (ref) => ref.get(client),
+            set: (ref, data, opts = {}) => ops.push(() => ref.set(data, opts, client)),
+            update: (ref, data) => ops.push(() => ref.update(data, client)),
+            delete: (ref) => ops.push(() => ref.delete(client)),
+        };
+
         try {
-            await client.query('BEGIN');
-            const operations = [];
-
-            const tx = {
-                async get(ref) {
-                    return await ref.get(client);
-                },
-                set(ref, data, opts = {}) {
-                    operations.push(async () => {
-                        await ref.set(data, opts, client);
-                    });
-                },
-                update(ref, data) {
-                    operations.push(async () => {
-                        await ref.update(data, client);
-                    });
-                },
-                delete(ref) {
-                    operations.push(async () => {
-                        await ref.delete(client);
-                    });
-                },
-            };
-
-            await fn(tx); // Run user transaction function
-            for (const op of operations) await op(); // Execute all queued writes
-
-            await client.query('COMMIT');
+            await fn(tx);
+            for (const op of ops) await op();
+            await client.query("COMMIT");
         } catch (err) {
-            await client.query('ROLLBACK');
+            await client.query("ROLLBACK");
             throw err;
-        } finally {
         }
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  Postbase Admin Client (Firestore-like for Postgres JSONB)          */
+    /* ------------------------------------------------------------------ */
+
+    function serializeForWrite(value) {
+        // Keep symmetry with client serializeRefs()
+        if (value instanceof Timestamp) return value.toString();
+
+        if (value instanceof DocumentRef) {
+            return { _type: 'ref', path: value.fullPath };
+        }
+
+        if (Array.isArray(value)) return value.map(serializeForWrite);
+
+        if (typeof value === "object" && value !== null) {
+            const out = {};
+            for (const [k, v] of Object.entries(value)) {
+                out[k] = serializeForWrite(v);
+            }
+            return out;
+        }
+
+        return value;
+    }
+
+    function adminDeserialize(value) {
+        if (Array.isArray(value)) return value.map(adminDeserialize);
+
+        if (value && typeof value === "object") {
+            // detect timestamp
+            if (typeof value === "string" && isIsoDateString(value)) {
+                return Timestamp.fromPostgres(value);
+            }
+
+            // detect reference object
+            if (value._type === "ref" && value.path) {
+                const parts = value.path.split('/');
+                let ref = self.collection(parts[0]).doc(parts[1]);
+                for (let i = 2; i < parts.length; i += 2) {
+                    ref = ref.collection(parts[i]).doc(parts[i + 1]);
+                }
+                return ref;
+            }
+
+            const out = {};
+            for (const [k, v] of Object.entries(value)) {
+                out[k] = adminDeserialize(v);
+            }
+            return out;
+        }
+
+        // ISO top-level primitive
+        if (typeof value === "string" && isIsoDateString(value)) {
+            return Timestamp.fromPostgres(value);
+        }
+
+        return value;
+    }
+
+    function isIsoDateString(v) {
+        return typeof v === "string" &&
+            /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(v);
     }
 
     /* ------------------------------------------------------------------ */
     /*  Public API                                                         */
     /* ------------------------------------------------------------------ */
-    return {
+    self = {
         collection(name) {
             return new CollectionRef(name);
         },
@@ -424,4 +472,5 @@ export function makePostbaseAdminClient({ pool }) {
         buildWhere,
         buildOrder,
     };
+    return self;
 }
