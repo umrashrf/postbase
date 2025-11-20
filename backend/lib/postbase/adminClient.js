@@ -68,10 +68,11 @@ export function makePostbaseAdminClient({ pool }) {
                 if (typeof value === 'object') {
                     const path = value.path || `${value.collectionName}/${value.id}`;
                     params.push(path);
+                    whereClauses.push(`data->'${field}'->>'path' ${sqlOp} $${idx++}`);
                 } else {
                     params.push(value);
+                    whereClauses.push(`(data->'${field}') ? $${idx++}`);
                 }
-                whereClauses.push(`(data->'${field}') ? $${idx++}`);
                 continue;
             }
 
