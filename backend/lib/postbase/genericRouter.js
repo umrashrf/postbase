@@ -83,14 +83,13 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
 
             // array-contains
             else if (op === 'array-contains') {
-                if (typeof value === 'object') {
-                    const path = value.path || `${value.collectionName}/${value.id}`;
-                    params.push(path);
-                    whereClauses.push(`data->'${field}'->>'path' ${op} $${idx++}`);
-                } else {
-                    params.push(value);
-                    whereClauses.push(`(data->'${field}') ? $${idx++}`);
+                if (value && typeof value === 'object' && value._type === 'ref') {
+                    params.push(JSON.stringify([value]));
+                    whereClauses.push(`data->'${field}' @> $${idx++}::jsonb`);
+                    continue;
                 }
+                params.push(value);
+                whereClauses.push(`(data->'${field}') ? $${idx++}`);
             }
 
             // LIKE / ILIKE
