@@ -5,10 +5,71 @@ import { runQuery } from './db.js';
 /*  Firestore-like Helpers                                             */
 /* ------------------------------------------------------------------ */
 
-export const Timestamp = {
-    now: () => ({ _type: 'timestamp', iso: new Date().toISOString() }),
-    fromDate: (d) => ({ _type: 'timestamp', iso: d.toISOString() }),
-};
+export class Timestamp {
+    constructor(seconds, nanoseconds) {
+        this._type = 'timestamp';
+        this.seconds = seconds;
+        this.nanoseconds = nanoseconds;
+    }
+
+    /** Create from JS Date */
+    static fromDate(date) {
+        const millis = date.getTime();
+        const seconds = Math.floor(millis / 1000);
+        const nanoseconds = (millis % 1000) * 1e6;
+        return new Timestamp(seconds, nanoseconds);
+    }
+
+    /** Now */
+    static now() {
+        return Timestamp.fromDate(new Date());
+    }
+
+    /** Create from Firestore-style seconds + nanos */
+    static fromSeconds(seconds, nanoseconds = 0) {
+        return new Timestamp(seconds, nanoseconds);
+    }
+
+    /** Create from Postgres ISO datetime string */
+    static fromPostgres(isoString) {
+        const date = new Date(isoString);
+
+        if (isNaN(date.getTime())) {
+            throw new Error("Invalid Postgres ISO datetime: " + isoString);
+        }
+
+        // Parse fractional seconds manually (Postgres can include microseconds)
+        const match = isoString.match(/\.(\d+)(?=Z|[+-]\d\d:?\d\d$)/);
+        let nanos = 0;
+
+        if (match) {
+            let fractional = match[1];                 // e.g., "789123"
+            if (fractional.length > 9) {
+                fractional = fractional.slice(0, 9);   // trim to nanoseconds
+            }
+            nanos = parseInt((fractional + "000000000").slice(0, 9), 10);
+        }
+
+        const seconds = Math.floor(date.getTime() / 1000);
+
+        return new Timestamp(seconds, nanos);
+    }
+
+    /** Convert back to JS Date */
+    toDate() {
+        return new Date(this.seconds * 1000 + Math.floor(this.nanoseconds / 1e6));
+    }
+
+    /** Milliseconds since epoch */
+    toMillis() {
+        return this.seconds * 1000 + Math.floor(this.nanoseconds / 1e6);
+    }
+
+    /** ISO string */
+    toString() {
+        return this.toDate().toISOString();
+    }
+}
 
 export const FieldValue = {
     increment: (by = 1) => ({ _op: 'increment', by }),
