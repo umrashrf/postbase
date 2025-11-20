@@ -83,7 +83,12 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
 
             // array-contains
             else if (op === 'array-contains') {
-                params.push(value);
+                if (typeof value === 'object') {
+                    const path = value.path || `${value.collectionName}/${value.id}`;
+                    params.push(path);
+                } else {
+                    params.push(value);
+                }
                 whereClauses.push(`(data->'${field}') ? $${idx++}`);
             }
 
