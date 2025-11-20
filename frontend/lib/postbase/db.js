@@ -164,12 +164,13 @@ function deserializeRefs(db, obj) {
             return Timestamp.fromPostgres(obj);
         }
 
-        if (obj.hasOwnProperty('_type')
-            && obj._type === 'ref'
-            && obj.hasOwnProperty('path')
-            && obj.path) {
-            const [collectionName, id] = obj.path.split('/');
-            return new DocumentReference(db, collectionName, id);
+        if (obj._type === 'ref' && obj.path) {
+            const parts = obj.path.split('/');
+            let ref = db.collection(parts[0]).doc(parts[1]);
+            for (let i = 2; i < parts.length; i += 2) {
+                ref = ref.collection(parts[i]).doc(parts[i + 1]);
+            }
+            return ref;
         }
 
         const out = {};
@@ -201,10 +202,10 @@ class DocumentsSnapshot {
 
 class DocumentSnapshot {
     constructor(id, data, path, db) {
-        this.id = id;
-        this._data = data;
-        this._path = path;
+        this.id = decodeURIComponent(id);
+        this._path = path.split('/').map(decodeURIComponent).join('/');
         this._db = db;
+        this._data = data;
     }
 
     data() {
@@ -307,6 +308,18 @@ class DocumentReference {
         const json = await toJsonOrThrow(res);
         return json.data;
     }
+
+    onSnapshot(callback, errorCallback) {
+        // Reuse the existing real-time query system
+        const q = new QueryBuilder(this.collection(this.id));
+        q._filters.push({ field: "__id", op: "==", value: this.id });
+
+        return q.onSnapshot((querySnap) => {
+            const docSnap = querySnap.docs[0] ||
+                new DocumentSnapshot(this.id, null, this.fullPath, this.db);
+            callback(docSnap);
+        }, errorCallback);
+    }
 }
 
 /* Query builder helpers */
@@ -361,6 +374,8 @@ class QueryBuilder {
             && value._type === 'timestamp'
             && 'toString' in value) {
             _value = value.toString();
+        } else if (value instanceof DocumentReference) {
+            _value = { _type: 'ref', path: value.fullPath };
         }
         this._filters.push({ field, op, value: _value });
         return this;
@@ -420,11 +435,17 @@ class QueryBuilder {
         if (typeof this._limit !== 'undefined') out.limit = this._limit;
         if (typeof this._offset !== 'undefined') out.offset = this._offset;
 
-        // Include cursors if defined
-        if (this._startAt !== undefined) out.startAt = this._startAt;
-        if (this._startAfter !== undefined) out.startAfter = this._startAfter;
-        if (this._endAt !== undefined) out.endAt = this._endAt;
-        if (this._endBefore !== undefined) out.endBefore = this._endBefore;
+        if (this.collectionRef.parentPath) {
+            // parentPath = "messages/A"
+            const parts = this.collectionRef.parentPath.split('/');
+            const parentTable = parts[0];
+            const parentId = parts[1];
+            out.parent = {
+                collectionName: parentTable,
+                id: parentId,
+                path: `${this.collectionRef.parentPath}/${this.collectionRef.name}`
+            };
+        }
 
         return out;
     }
@@ -480,7 +501,11 @@ class QueryBuilder {
             try {
                 const msg = JSON.parse(event.data);
                 if (msg.type === 'init' || msg.type === 'change') {
-                    const docs = (msg.data || []).map(doc => {
+                    let data = msg.data;
+                    if (!Array.isArray(msg.data)) {
+                        data = [msg.data];
+                    }
+                    const docs = (data || []).map(doc => {
                         const data = deserializeRefs(this.collectionRef.db, doc.data || doc);
                         return new DocumentSnapshot(
                             doc.id,
@@ -489,7 +514,7 @@ class QueryBuilder {
                             this.collectionRef.db
                         );
                     });
-                    callback(new QuerySnapshot(docs));
+                    callback(new QuerySnapshot(docs), msg.type);
                 } else if (msg.type === 'error') {
                     errorCallback(msg);
                 }

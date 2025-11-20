@@ -33,14 +33,15 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
     ]);
 
     function isDocumentRef(value) {
-        return value &&
-            typeof value === "object" &&
-            value.collectionName &&
-            value.id;
+        if (!value || typeof value !== "object") return false;
+        if (value.collectionName && value.id) return true;
+        if (value._type === 'ref' && value.path) return true;
+        return false;
     }
 
     function resolveReference(ref) {
-        return `${ref.collectionName}/${ref.id}`;
+        if (ref.collectionName && ref.id) return `${ref.collectionName}/${ref.id}`;
+        if (ref._type === 'ref' && ref.path) return ref.path;
     }
 
     function mapRequest(req) {
@@ -373,10 +374,11 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
         try {
             const payload = req.body || {};
 
-            // enforce parent link
+            // enforce parent link with path support (fix for same-name collections)
             payload.parent = {
                 collectionName: parentTable,
-                id: parentId
+                id: parentId,
+                path: `${parentTable}/${parentId}/${subTable}`
             };
 
             const request = mapRequest(req);
@@ -386,9 +388,9 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
             if (!allowed) return res.status(403).json({ error: 'forbidden' });
 
             const sql = `
-            INSERT INTO "${subTable}" (data)
-            VALUES ($1)
-            RETURNING id, data, created_at, updated_at`;
+                INSERT INTO "${subTable}" (data)
+                VALUES ($1)
+                RETURNING id, data, created_at, updated_at`;
 
             const result = await runQuery(pool, sql, [payload]);
             const row = result.rows[0];
@@ -415,7 +417,7 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
 
             // validate belongs to parent
             if (!row.data.parent ||
-                row.data.parent.collectionName !== parentTable ||
+                row.data.parent.path !== `${parentTable}/${parentId}/${subTable}` ||
                 row.data.parent.id !== parentId) {
                 return res.status(404).json({ error: 'not_found' });
             }
@@ -448,7 +450,7 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
 
             // enforce parent link
             if (!current.parent ||
-                current.parent.collectionName !== parentTable ||
+                current.parent.path !== `${parentTable}/${parentId}/${subTable}` ||
                 current.parent.id !== parentId)
                 return res.status(404).json({ error: 'not_found' });
 
@@ -493,7 +495,7 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
             const current = existing.rows[0].data;
 
             if (!current.parent ||
-                current.parent.collectionName !== parentTable ||
+                current.parent.path !== `${parentTable}/${parentId}/${subTable}` ||
                 current.parent.id !== parentId)
                 return res.status(404).json({ error: 'not_found' });
 
