@@ -44,36 +44,47 @@ export function makePostbaseAdminClient({ pool }) {
 
         for (const f of filters) {
             const { field, op, value } = f;
-            if (!ALLOWED_OPS.has(op)) throw new Error(`Invalid operator: ${op}`);
+            const sqlOp = op === '==' ? '=' : op;
 
+            // Detect parent/document references
+            if (value && typeof value === 'object' && value.collectionName && value.id) {
+                const path = value.path || `${value.collectionName}/${value.id}`;
+                params.push(path);
+                whereClauses.push(`data->'${field}'->>'path' ${sqlOp} $${idx++}`);
+                continue;
+            }
+
+            // IN operator
             if (op === 'IN') {
-                if (!Array.isArray(value) || value.length === 0)
-                    throw new Error('IN requires non-empty array');
+                if (!Array.isArray(value) || value.length === 0) throw new Error('IN requires non-empty array');
                 const placeholders = value.map(() => `$${idx++}`);
                 params.push(...value);
                 whereClauses.push(`data->>'${field}' IN (${placeholders.join(',')})`);
+                continue;
             }
 
-            else if (op === 'array-contains') {
-                // JSONB array membership check
+            // array-contains
+            if (op === 'array-contains') {
                 params.push(value);
                 whereClauses.push(`(data->'${field}') ? $${idx++}`);
+                continue;
             }
 
-            else if (op === 'LIKE' || op === 'ILIKE') {
+            // LIKE / ILIKE
+            if (op === 'LIKE' || op === 'ILIKE') {
                 params.push(value);
                 whereClauses.push(`data->>'${field}' ${op} $${idx++}`);
+                continue;
             }
 
-            else {
-                params.push(value);
-                whereClauses.push(`data->>'${field}' ${op} $${idx++}`);
-            }
+            // Default primitive comparison
+            params.push(value);
+            whereClauses.push(`data->>'${field}' ${sqlOp} $${idx++}`);
         }
 
         return {
             whereSql: whereClauses.length ? `WHERE ${whereClauses.join(' AND ')}` : '',
-            params
+            params,
         };
     }
 
