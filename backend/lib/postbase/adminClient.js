@@ -160,17 +160,17 @@ export function makePostbaseAdminClient({ pool }) {
         const result = { ...target };
 
         for (const [k, v] of Object.entries(updates)) {
-            if (!v || typeof v !== "object") {
+            if (!v) {
                 result[k] = v;
                 continue;
             }
 
-            if (v._op === "increment") {
+            if (v.hasOwnProperty('_op') && v._op && v._op === "increment") {
                 result[k] = Number(result[k] || 0) + v.by;
                 continue;
             }
 
-            if (v._op === "serverTimestamp") {
+            if (v.hasOwnProperty('_op') && v._op && v._op === "serverTimestamp") {
                 result[k] = now;
                 continue;
             }
@@ -180,8 +180,13 @@ export function makePostbaseAdminClient({ pool }) {
                 continue;
             }
 
-            if (v._type === "ref") {
+            if (v.hasOwnProperty('_type') && v._type && v._type === "ref") {
                 result[k] = { _type: "ref", path: v.path };
+                continue;
+            }
+
+            if (!v || typeof v !== "object") {
+                result[k] = v;
                 continue;
             }
 
@@ -196,9 +201,10 @@ export function makePostbaseAdminClient({ pool }) {
     /* =================================================================== */
 
     class AdminDocumentSnapshot {
-        constructor(id, data, ref) {
+        constructor(id, rawData, ref) {
             this.id = id;
-            this._data = adminDeserialize(data);
+            this._raw = rawData;
+            this._data = adminDeserialize(rawData);
             this.ref = ref;
         }
 
@@ -208,6 +214,10 @@ export function makePostbaseAdminClient({ pool }) {
 
         data() {
             return this._data;
+        }
+
+        raw() {
+            return this._raw;
         }
     }
 
@@ -224,15 +234,15 @@ export function makePostbaseAdminClient({ pool }) {
     /*  Document Reference                                                 */
     /* ------------------------------------------------------------------ */
     class DocumentRef {
-        constructor(table, id, parentPath = null) {
-            this.table = table;
+        constructor(collectionName, id, parentPath = null) {
+            this.collectionName = collectionName;
             this.id = id;
             this.parentPath = parentPath; // e.g. "users/u1"
         }
 
         /** Build full document path (for chaining use only) */
         get fullPath() {
-            const base = this.parentPath ? `${this.parentPath}/${this.table}` : this.table;
+            const base = this.parentPath ? `${this.parentPath}/${this.collectionName}` : this.collectionName;
             return `${base}/${this.id}`;
         }
 
@@ -242,9 +252,7 @@ export function makePostbaseAdminClient({ pool }) {
         }
 
         async get(client = pool) {
-            const sql = `SELECT id, data FROM "${this.table}" WHERE id = $1 LIMIT 1`;
-            console.log(`Executing: ${sql}`);
-            console.log(`with params ${this.id}`)
+            const sql = `SELECT id, data FROM "${this.collectionName}" WHERE id = $1 LIMIT 1`;
             const result = await runQuery(client, sql, [this.id]);
 
             if (!result.rowCount) {
@@ -256,12 +264,12 @@ export function makePostbaseAdminClient({ pool }) {
         }
 
         async set(data, opts = {}, client = pool) {
-            const existing = await this.get(client);
-            const base = opts.merge && existing.exists() ? existing.data() : {};
+            const existing = await this.get(client); // data has been deserialized
+            const base = opts.merge && existing.exists() ? existing.raw() : {};
             const finalData = applyFieldValues(base, serializeForWrite(data));
 
             const sql = `
-            INSERT INTO "${this.table}" (id, data)
+            INSERT INTO "${this.collectionName}" (id, data)
             VALUES ($1, $2)
             ON CONFLICT (id)
             DO UPDATE SET data = EXCLUDED.data, updated_at = now() at time zone 'UTC'
@@ -274,12 +282,12 @@ export function makePostbaseAdminClient({ pool }) {
         async update(partial, client = pool) {
             const existing = await this.get(client);
             if (!existing.exists()) throw new Error("Document does not exist");
-            const merged = applyFieldValues(existing.data(), serializeForWrite(partial));
+            const merged = applyFieldValues(existing.raw(), serializeForWrite(partial));
             return await this.set(merged, { merge: false }, client);
         }
 
         async delete(client = pool) {
-            const sql = `DELETE FROM "${this.table}" WHERE id=$1 RETURNING id`;
+            const sql = `DELETE FROM "${this.collectionName}" WHERE id=$1 RETURNING id`;
             const r = await runQuery(client, sql, [this.id]);
             return r.rowCount ? r.rows[0].id : null;
         }
@@ -289,8 +297,8 @@ export function makePostbaseAdminClient({ pool }) {
     /*  Collection Reference                                               */
     /* ------------------------------------------------------------------ */
     class CollectionRef {
-        constructor(table, parentPath = null) {
-            this.table = table;
+        constructor(collectionName, parentPath = null) {
+            this.collectionName = collectionName;
             this.parentPath = parentPath; // e.g. "users/u1"
             this._filters = [];
             this._order = [];
@@ -300,12 +308,12 @@ export function makePostbaseAdminClient({ pool }) {
 
         /** Build full collection path (for chaining use only) */
         get fullPath() {
-            return this.parentPath ? `${this.parentPath}/${this.table}` : this.table;
+            return this.parentPath ? `${this.parentPath}/${this.collectionName}` : this.collectionName;
         }
 
         /** Return a DocumentRef in this collection */
         doc(id) {
-            return new DocumentRef(this.table, id, this.parentPath);
+            return new DocumentRef(this.collectionName, id, this.parentPath);
         }
 
         /** Allow chaining subcollections under this collection */
@@ -341,10 +349,10 @@ export function makePostbaseAdminClient({ pool }) {
             const id = randomUUID();
             const prepared = applyFieldValues({}, serializeForWrite(data));
 
-            const sql = `INSERT INTO "${this.table}" (id, data) VALUES ($1, $2) RETURNING id, data;`;
+            const sql = `INSERT INTO "${this.collectionName}" (id, data) VALUES ($1, $2) RETURNING id, data;`;
             const r = await runQuery(client, sql, [id, prepared]);
             const row = r.rows[0];
-            return new AdminDocumentSnapshot(row.id, row.data, new DocumentRef(this.table, row.id, this.parentPath));
+            return new AdminDocumentSnapshot(row.id, row.data, new DocumentRef(this.collectionName, row.id, this.parentPath));
         }
 
         async getDocs(client = pool) {
@@ -355,10 +363,10 @@ export function makePostbaseAdminClient({ pool }) {
 
             const sql = `
             SELECT id, data, created_at, updated_at
-            FROM "${this.table}"
+            FROM "${this.collectionName}"
             ${whereSql} ${orderSql} ${limitSql} ${offsetSql}`;
             const result = await runQuery(client, sql, params);
-            return result.rows.map(r => new AdminDocumentSnapshot(r.id, r.data, new DocumentRef(this.table, r.id, this.parentPath)));
+            return result.rows.map(r => new AdminDocumentSnapshot(r.id, r.data, new DocumentRef(this.collectionName, r.id, this.parentPath)));
         }
 
         async get(client = pool) {
@@ -391,19 +399,34 @@ export function makePostbaseAdminClient({ pool }) {
         }
     }
 
+    function isDocumentRef(value) {
+        if (!value || typeof value !== "object") return false;
+        if (value.collectionName && value.id) return true;
+        if (value._type === 'ref' && value.path) return true;
+        return false;
+    }
+
+    function resolveReference(ref) {
+        if (ref.collectionName && ref.id) return `${ref.collectionName}/${ref.id}`;
+        if (ref._type === 'ref' && ref.path) return ref.path;
+    }
+
     /* ------------------------------------------------------------------ */
     /*  Postbase Admin Client (Firestore-like for Postgres JSONB)          */
     /* ------------------------------------------------------------------ */
 
     function serializeForWrite(value) {
-        // Keep symmetry with client serializeRefs()
-        if (value instanceof Timestamp) return value.toString();
-
-        if (value instanceof DocumentRef) {
-            return { _type: 'ref', path: value.fullPath };
+        if (isDocumentRef(value)) {
+            return { _type: 'ref', path: resolveReference(value) };
         }
 
-        if (Array.isArray(value)) return value.map(serializeForWrite);
+        if (value instanceof Timestamp) {
+            return value.toString();
+        }
+
+        if (Array.isArray(value)) {
+            return value.map(serializeForWrite);
+        }
 
         if (typeof value === "object" && value !== null) {
             const out = {};
