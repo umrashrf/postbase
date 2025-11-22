@@ -109,13 +109,6 @@ export function makePostbaseAdminClient({ pool }) {
             const { field, op, value } = f;
             const sqlOp = op === "==" ? "=" : op;
 
-            // reference compare
-            if (value && value._type === "ref") {
-                params.push(value.path);
-                where.push(`data->'${field}'->>'path' ${sqlOp} $${i++}`);
-                continue;
-            }
-
             if (op === "IN") {
                 if (!Array.isArray(value)) throw new Error("IN requires array");
                 const ph = value.map(() => `$${i++}`).join(",");
@@ -132,6 +125,13 @@ export function makePostbaseAdminClient({ pool }) {
                     params.push(value);
                     where.push(`(data->'${field}') ? $${i++}`);
                 }
+                continue;
+            }
+
+            // reference compare
+            if (value && value._type === "ref") {
+                params.push(value.path);
+                where.push(`data->'${field}'->>'path' ${sqlOp} $${i++}`);
                 continue;
             }
 
@@ -158,6 +158,8 @@ export function makePostbaseAdminClient({ pool }) {
     function applyFieldValues(target, updates) {
         const now = new Date().toISOString();
         const result = { ...target };
+
+        console.log('updates', updates);
 
         for (const [k, v] of Object.entries(updates)) {
             if (!v) {
@@ -253,6 +255,8 @@ export function makePostbaseAdminClient({ pool }) {
 
         async get(client = pool) {
             const sql = `SELECT id, data FROM "${this.collectionName}" WHERE id = $1 LIMIT 1`;
+            console.log(`Executing: ${sql}`);
+            console.log(`with params ${this.id}`)
             const result = await runQuery(client, sql, [this.id]);
 
             if (!result.rowCount) {
@@ -346,6 +350,9 @@ export function makePostbaseAdminClient({ pool }) {
         }
 
         async add(data, client = pool) {
+            console.log('data before serializing', data);
+            console.log('data after serializing', serializeForWrite(data));
+
             const id = randomUUID();
             const prepared = applyFieldValues({}, serializeForWrite(data));
 
@@ -417,21 +424,26 @@ export function makePostbaseAdminClient({ pool }) {
 
     function serializeForWrite(value) {
         if (isDocumentRef(value)) {
+            console.log('isDocumentRef(value) === true');
             return { _type: 'ref', path: resolveReference(value) };
         }
 
         if (value instanceof Timestamp) {
+            console.log('value instanceof Timestamp === true');
             return value.toString();
         }
 
         if (Array.isArray(value)) {
+            console.log('Array.isArray(value) === true');
             return value.map(serializeForWrite);
         }
 
         if (typeof value === "object" && value !== null) {
+            console.log('(typeof value === "object" && value !== null) === true');
             const out = {};
             for (const [k, v] of Object.entries(value)) {
                 out[k] = serializeForWrite(v);
+                console.log('serializeForWrite', k, out[k]);
             }
             return out;
         }
@@ -482,6 +494,7 @@ export function makePostbaseAdminClient({ pool }) {
     /*  Public API                                                         */
     /* ------------------------------------------------------------------ */
     self = {
+        DocumentRef,
         collection(name) {
             return new CollectionRef(name);
         },

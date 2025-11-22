@@ -65,11 +65,15 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
             const { field, op, value } = f;
             if (!ALLOWED_OPS.has(op)) throw new Error(`Invalid operator: ${op}`);
 
-            if (isDocumentRef(value)) {
-                const sqlOp = op === "==" ? "=" : op;
-                params.push(resolveReference(value));
-                whereClauses.push(`data->'${field}'->>'path' ${sqlOp} $${idx++}`);
-                continue;
+            // array-contains
+            if (op === 'array-contains') {
+                if (value && typeof value === 'object' && value._type === 'ref') {
+                    params.push(JSON.stringify([value]));
+                    whereClauses.push(`data->'${field}' @> $${idx++}::jsonb`);
+                    continue;
+                }
+                params.push(value);
+                whereClauses.push(`(data->'${field}') ? $${idx++}`);
             }
 
             // IN
@@ -81,21 +85,17 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
                 whereClauses.push(`data->>'${field}' IN (${placeholders.join(',')})`);
             }
 
-            // array-contains
-            else if (op === 'array-contains') {
-                if (value && typeof value === 'object' && value._type === 'ref') {
-                    params.push(JSON.stringify([value]));
-                    whereClauses.push(`data->'${field}' @> $${idx++}::jsonb`);
-                    continue;
-                }
-                params.push(value);
-                whereClauses.push(`(data->'${field}') ? $${idx++}`);
-            }
-
             // LIKE / ILIKE
             else if (op === 'LIKE' || op === 'ILIKE') {
                 params.push(value);
                 whereClauses.push(`data->>'${field}' ${op} $${idx++}`);
+            }
+
+            else if (isDocumentRef(value)) {
+                const sqlOp = op === "==" ? "=" : op;
+                params.push(resolveReference(value));
+                whereClauses.push(`data->'${field}'->>'path' ${sqlOp} $${idx++}`);
+                continue;
             }
 
             // default (string or primitive)
@@ -144,6 +144,10 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
                 SELECT id, data, created_at, updated_at
                 FROM "${table}"
                 ${whereSql} ${orderSql} ${limitSql} ${offsetSql}`;
+
+            console.log(`Executing sql ${sql}`);
+            console.log(`with parmas: ${params}`);
+
             const result = await runQuery(pool, sql, params);
 
             const out = [];
