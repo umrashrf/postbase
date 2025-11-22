@@ -77,7 +77,7 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
             }
 
             // IN
-            if (op === 'IN') {
+            else if (op === 'IN') {
                 if (!Array.isArray(value) || value.length === 0)
                     throw new Error('IN requires non-empty array');
                 const placeholders = value.map(() => `$${idx++}`);

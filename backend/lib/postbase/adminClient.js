@@ -117,7 +117,7 @@ export function makePostbaseAdminClient({ pool }) {
                 continue;
             }
 
-            if (op === "array-contains") {
+            else if (op === "array-contains") {
                 if (value && value._type === "ref") {
                     params.push(JSON.stringify([value]));
                     where.push(`data->'${field}' @> $${i++}::jsonb`);
@@ -129,7 +129,7 @@ export function makePostbaseAdminClient({ pool }) {
             }
 
             // reference compare
-            if (value && value._type === "ref") {
+            else if (value && value._type === "ref") {
                 params.push(value.path);
                 where.push(`data->'${field}'->>'path' ${sqlOp} $${i++}`);
                 continue;
