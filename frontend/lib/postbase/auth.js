@@ -55,15 +55,17 @@ export function createAuthClient(auth) {
         // Immediately invoke with current user
         (async () => {
             const { data } = await auth.getSession();
-            const user = data?.user ?? null;
-            if (user) {
-                user.uid = user.id;
+            const newUser = data?.user ?? null;
+            if (newUser) {
+                newUser.uid = newUser.id;
             }
-            currentUser = user;
-            if (currentUser) {
-                currentUser.getIdToken = getIdToken;
+            if (JSON.stringify(newUser) !== JSON.stringify(currentUser)) {
+                currentUser = newUser;
+                if (currentUser) {
+                    currentUser.getIdToken = getIdToken;
+                }
+                notifySubscribers(currentUser);
             }
-            callback(user);
         })();
 
         // Return unsubscribe
