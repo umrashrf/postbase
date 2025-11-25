@@ -66,6 +66,7 @@ export function createAuthClient(auth) {
                 }
                 notifySubscribers(currentUser);
             }
+            callback(currentUser);
         })();
 
         // Return unsubscribe
