@@ -1,3 +1,5 @@
+![Postbase Logo](https://github.com/umrashrf/postbase/blob/main/logo.png?raw=true)
+
 # 🐘 Postbase (Demo)
 
 Open Source, localhost supported, Drop-in Replacement and Self-Hosted Alternative for Firebase using Node.js, Express.js, BetterAuth and PostgreSQL (JSONB), node-pg-migrate
