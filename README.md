@@ -14,6 +14,18 @@ Brand new project launched 02 Nov 2025, this is boiler plate but working! Expect
 
 Mostly all code is ChatGPT generated but manually tested by human.
 
+## Get started
+
+To create a new project with Postbase, all you have to do is clone this repo.
+
+```
+git clone https://github.com/umrashrf/postbase.git
+```
+
+then start backend and frontend servers and modify as needed!
+
+Both backend/ and frontend/ folders have their own README.md
+
 ## Docs
 
 ### Authentication (Firebase Like API)
