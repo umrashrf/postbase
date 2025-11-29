@@ -14,7 +14,7 @@ Brand new project launched 02 Nov 2025, this is boiler plate but working! Expect
 
 Mostly all code is ChatGPT generated but manually tested by human.
 
-## Get started
+## Getting Started
 
 To create a new project with Postbase, all you have to do is clone this repo.
 
