@@ -20,6 +20,8 @@ Demo Preact app is included !
 - [x] Phone Verification Codes 📱✔️
 - [x] Delete User 👤❌
 
+Special thanks to [@better-auth/better-auth](https://github.com/better-auth/better-auth)
+
 ### Database Features
 
 - [x] NoSQL Document Storage 🗄️
