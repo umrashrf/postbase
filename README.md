@@ -18,6 +18,7 @@ Demo Preact app is included !
 - [x] Reset Password ♻️🔐
 - [x] Email Verification Email ✉️✔️
 - [x] Phone Verification Codes 📱✔️
+- [x] Delete User 👤❌
 
 ### Database Features
 
