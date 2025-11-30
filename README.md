@@ -8,6 +8,37 @@ Firebase 💔 | Supabase 💔 | Postbase ❤️
 
 Demo Preact app is included !
 
+## Features
+
+### Authentication Features
+
+- [x] Sign Up ➕👤
+- [x] Sign In 🔑
+- [x] Forgot Password ❓🔐
+- [x] Reset Password ♻️🔐
+- [x] Email Verification Email ✉️✔️
+- [x] Phone Verification Codes 📱✔️
+
+### Database Features
+
+- [x] NoSQL Document Storage 🗄️
+- [x] Collections 📁
+- [x] Query functions 🔍
+- [x] CRUD Functions 🛠️
+- [x] Security Rules 🛡️
+
+### File Upload / Storage
+
+- [x] HTTPS File Storage 🌐📦
+- [x] Security Rules 🛡️
+
+### Admin & System
+
+- [x] Admin SDK 👑🗄️
+- [x] Nginx Config 🧱
+- [x] Systemd Config ⚙️
+- [x] Git Push Deployment ⬆️🐙
+
 ## Disclaimer !!!
 
 Brand new project launched 02 Nov 2025, this is boiler plate but working! Expect heavy changes coming every few hours until stable
