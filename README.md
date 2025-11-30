@@ -27,6 +27,7 @@ Demo Preact app is included !
 - [x] Query functions 🔍
 - [x] CRUD Functions 🛠️
 - [x] Security Rules 🛡️
+- [x] Database Migrations 🛢️ → 🛢️
 
 ### File Upload / Storage
 
