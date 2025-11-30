@@ -33,7 +33,8 @@ Special thanks to [@better-auth/better-auth](https://github.com/better-auth/bett
 
 ### File Upload / Storage
 
-- [x] HTTPS File Storage 🌐📦
+- [x] File Upload (https) 📄⬆️
+- [x] File Serving (https) 📄⬇️
 - [x] Security Rules 🛡️
 
 ### Admin & System
