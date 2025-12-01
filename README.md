@@ -1,5 +1,7 @@
 ![Postbase Logo](https://github.com/umrashrf/postbase/blob/main/assets/img/logo.png?raw=true)
 
+<img src="https://github.com/umrashrf/postbase/blob/main/assets/img/nodejsLight.svg?raw=true" width="250"> &nbsp;&nbsp;&nbsp; <img src="https://github.com/umrashrf/postbase/blob/main/assets/img/expresjs.png?raw=true" width="52"> &nbsp;&nbsp;&nbsp; <img src="https://github.com/umrashrf/postbase/blob/main/assets/img/postgres.png?raw=true" width="40"> &nbsp;&nbsp;&nbsp; <img src="https://github.com/umrashrf/postbase/blob/main/assets/img/better-auth-logo-light.4b03f444.png?raw=true" width="54"> &nbsp;&nbsp;&nbsp; <img src="https://github.com/umrashrf/postbase/blob/main/assets/img/letsencrypt-logo-horizontal.png?raw=true" width="250">
+
 # 🐘 Postbase (Demo)
 
 Open Source, localhost supported, Drop-in Replacement and Self-Hosted Alternative for Firebase using Node.js, Express.js, BetterAuth and PostgreSQL (JSONB), node-pg-migrate
@@ -157,7 +159,3 @@ const doc = await admin.firestore().collection('collection').doc('docId').get();
 ## License 
 
 MIT
-
-## Projects
-
-<img src="https://github.com/umrashrf/postbase/blob/main/assets/img/nodejsLight.svg?raw=true" width="250"> &nbsp;&nbsp;&nbsp; <img src="https://github.com/umrashrf/postbase/blob/main/assets/img/expresjs.png?raw=true" width="52"> &nbsp;&nbsp;&nbsp; <img src="https://github.com/umrashrf/postbase/blob/main/assets/img/postgres.png?raw=true" width="40"> &nbsp;&nbsp;&nbsp; <img src="https://github.com/umrashrf/postbase/blob/main/assets/img/better-auth-logo-light.4b03f444.png?raw=true" width="54"> &nbsp;&nbsp;&nbsp; <img src="https://github.com/umrashrf/postbase/blob/main/assets/img/letsencrypt-logo-horizontal.png?raw=true" width="250">
