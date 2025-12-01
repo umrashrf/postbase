@@ -1,4 +1,4 @@
-![Postbase Logo](https://github.com/umrashrf/postbase/blob/main/logo.png?raw=true)
+![Postbase Logo](https://github.com/umrashrf/postbase/blob/main/assets/img/logo.png?raw=true)
 
 # 🐘 Postbase (Demo)
 
@@ -157,3 +157,7 @@ const doc = await admin.firestore().collection('collection').doc('docId').get();
 ## License 
 
 MIT
+
+## Projects
+
+![Node.js](https://github.com/umrashrf/postbase/blob/main/assets/img/node.js_logo.png?raw=true) ![Express.js](https://github.com/umrashrf/postbase/blob/main/assets/img/expresjs.png?raw=true) ![PostgreSQL](https://github.com/umrashrf/postbase/blob/main/assets/img/postgres.png?raw=true) ![Better-Auth](https://github.com/umrashrf/postbase/blob/main/assets/img/better-auth-logo-light.4b03f444.png?raw=true) ![Let's Encrypt](https://github.com/umrashrf/postbase/blob/main/assets/img/letsencrypt-logo-horizontal.png?raw=true)
