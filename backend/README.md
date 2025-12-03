@@ -16,6 +16,7 @@ docker run --name postgres -d \
     -e POSTGRES_PASSWORD=yoursecretpassword \
     -e PGDATA=/var/lib/postgresql/data \
     --mount source=postgres_data,target=/var/lib/postgresql/data \
+    --restart=unless-stopped \
     postgres
 ```
 - [ ] Setup BetterAuth - https://www.better-auth.com/docs/installation#create-database-tables
