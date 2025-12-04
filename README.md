@@ -145,6 +145,20 @@ const doc = await admin.firestore().collection('collection').doc('docId').get();
 
 ### Todo
 - [ ] Firebase Functions Replacement (Backend API can be used for now)
+
+Important functions to replicate:
+
+```
+# https://firebase.google.com/docs/functions/schedule-functions
+const { onSchedule } = require("firebase-functions/scheduler");
+
+# https://firebase.google.com/docs/functions/callable
+const { onCall } = require("firebase-functions/https");
+
+# https://firebase.google.com/docs/functions/get-started
+const { onRequest } = require("firebase-functions/https");
+```
+
 - [ ] Firebase Storage Replacement (Support S3 and other backend)
 
 ### In Progress
