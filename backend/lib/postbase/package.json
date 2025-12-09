@@ -1,0 +1,17 @@
+{
+    "name": "@postbase/backend",
+    "version": "0.1.0",
+    "type": "module",
+    "scripts": {
+        "migrate:up": "node-pg-migrate up",
+        "migrate:down": "node-pg-migrate down",
+        "migrate:redo": "node-pg-migrate redo",
+        "migrate:create": "node-pg-migrate create",
+        "test": "NODE_OPTIONS=--experimental-vm-modules TEST_DB_URL=postgres://postgres:mysecretpassword@localhost:5432/test_db_name jest"
+    },
+    "devDependencies": {
+        "jest": "^30.2.0",
+        "node-pg-migrate": "^8.0.3",
+        "supertest": "^7.1.4"
+    }
+}
