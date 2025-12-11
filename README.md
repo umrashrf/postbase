@@ -1,30 +1,30 @@
 ![Postbase Logo](https://github.com/umrashrf/postbase/blob/main/assets/img/logo.png?raw=true)
 
-<table>
+<table cellspacing="10">
   <tr>
-    <td align="center" valign="middle" style="background-color:white; height:100px; width:128px; padding:10px; border-radius:8px;">
+    <td align="center" valign="middle" style="background-color:white; width:128px; height:100px; padding:10px;">
       <a href="https://github.com/umrashrf/postbase/blob/main/assets/img/node.js_logo.png?raw=true" target="_blank">
-        <img alt="Node.js" src="https://github.com/umrashrf/postbase/raw/main/assets/img/node.js_logo.png?raw=true" style="max-height:60px; max-width:100%;">
+        <img src="https://github.com/umrashrf/postbase/raw/main/assets/img/node.js_logo.png?raw=true" alt="Node.js" style="max-width:100%; max-height:80px;">
       </a>
     </td>
-    <td align="center" valign="middle" style="background-color:white; height:100px; width:128px; padding:10px; border-radius:8px;">
+    <td align="center" valign="middle" style="background-color:white; width:128px; height:100px; padding:10px;">
       <a href="https://github.com/umrashrf/postbase/blob/main/assets/img/expresjs.png?raw=true" target="_blank">
-        <img alt="Express.js" src="https://github.com/umrashrf/postbase/raw/main/assets/img/expresjs.png?raw=true" style="max-height:60px; max-width:100%;">
+        <img src="https://github.com/umrashrf/postbase/raw/main/assets/img/expresjs.png?raw=true" alt="Express.js" style="max-width:100%; max-height:80px;">
       </a>
     </td>
-    <td align="center" valign="middle" style="background-color:white; height:100px; width:128px; padding:10px; border-radius:8px;">
+    <td align="center" valign="middle" style="background-color:white; width:128px; height:100px; padding:10px;">
       <a href="https://github.com/umrashrf/postbase/blob/main/assets/img/postgres.png?raw=true" target="_blank">
-        <img alt="PostgreSQL" src="https://github.com/umrashrf/postbase/raw/main/assets/img/postgres.png?raw=true" style="max-height:60px; max-width:100%;">
+        <img src="https://github.com/umrashrf/postbase/raw/main/assets/img/postgres.png?raw=true" alt="PostgreSQL" style="max-width:100%; max-height:80px;">
       </a>
     </td>
-    <td align="center" valign="middle" style="background-color:white; height:100px; width:128px; padding:10px; border-radius:8px;">
+    <td align="center" valign="middle" style="background-color:white; width:128px; height:100px; padding:10px;">
       <a href="https://github.com/umrashrf/postbase/blob/main/assets/img/better-auth-logo-light.4b03f444.png?raw=true" target="_blank">
-        <img alt="Better-Auth" src="https://github.com/umrashrf/postbase/raw/main/assets/img/better-auth-logo-light.4b03f444.png?raw=true" style="max-height:60px; max-width:100%;">
+        <img src="https://github.com/umrashrf/postbase/raw/main/assets/img/better-auth-logo-light.4b03f444.png?raw=true" alt="Better-Auth" style="max-width:100%; max-height:80px;">
       </a>
     </td>
-    <td align="center" valign="middle" style="background-color:white; height:100px; width:128px; padding:10px; border-radius:8px;">
+    <td align="center" valign="middle" style="background-color:white; width:128px; height:100px; padding:10px;">
       <a href="https://github.com/umrashrf/postbase/blob/main/assets/img/letsencrypt-logo-horizontal.png?raw=true" target="_blank">
-        <img alt="Let's Encrypt" src="https://github.com/umrashrf/postbase/raw/main/assets/img/letsencrypt-logo-horizontal.png?raw=true" style="max-height:60px; max-width:100%;">
+        <img src="https://github.com/umrashrf/postbase/raw/main/assets/img/letsencrypt-logo-horizontal.png?raw=true" alt="Let's Encrypt" style="max-width:100%; max-height:80px;">
       </a>
     </td>
   </tr>
