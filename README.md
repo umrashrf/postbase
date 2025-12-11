@@ -1,28 +1,34 @@
 ![Postbase Logo](https://github.com/umrashrf/postbase/blob/main/assets/img/logo.png?raw=true)
 
-<div style="display: flex; gap: 10px; flex-wrap: wrap;">
-
-  <div style="background-color: white; height: 100px; max-width: 128px; display: flex; align-items: center; justify-content: center; padding: 10px; border-radius: 8px;">
-    <img alt="Node.js" src="https://github.com/umrashrf/postbase/blob/main/assets/img/node.js_logo.png?raw=true" style="max-height: 60px; max-width: 100%;">
-  </div>
-
-  <div style="background-color: white; height: 100px; max-width: 128px; display: flex; align-items: center; justify-content: center; padding: 10px; border-radius: 8px;">
-    <img alt="Express.js" src="https://github.com/umrashrf/postbase/blob/main/assets/img/expresjs.png?raw=true" style="max-height: 60px; max-width: 100%;">
-  </div>
-
-  <div style="background-color: white; height: 100px; max-width: 128px; display: flex; align-items: center; justify-content: center; padding: 10px; border-radius: 8px;">
-    <img alt="PostgreSQL" src="https://github.com/umrashrf/postbase/blob/main/assets/img/postgres.png?raw=true" style="max-height: 60px; max-width: 100%;">
-  </div>
-
-  <div style="background-color: white; height: 100px; max-width: 128px; display: flex; align-items: center; justify-content: center; padding: 10px; border-radius: 8px;">
-    <img alt="Better-Auth" src="https://github.com/umrashrf/postbase/blob/main/assets/img/better-auth-logo-light.4b03f444.png?raw=true" style="max-height: 60px; max-width: 100%;">
-  </div>
-
-  <div style="background-color: white; height: 100px; max-width: 128px; display: flex; align-items: center; justify-content: center; padding: 10px; border-radius: 8px;">
-    <img alt="Let's Encrypt" src="https://github.com/umrashrf/postbase/blob/main/assets/img/letsencrypt-logo-horizontal.png?raw=true" style="max-height: 60px; max-width: 100%;">
-  </div>
-
-</div>
+<table>
+  <tr>
+    <td align="center" valign="middle" style="background-color:white; height:100px; width:128px; padding:10px; border-radius:8px;">
+      <a href="https://github.com/umrashrf/postbase/blob/main/assets/img/node.js_logo.png?raw=true" target="_blank">
+        <img alt="Node.js" src="https://github.com/umrashrf/postbase/raw/main/assets/img/node.js_logo.png?raw=true" style="max-height:60px; max-width:100%;">
+      </a>
+    </td>
+    <td align="center" valign="middle" style="background-color:white; height:100px; width:128px; padding:10px; border-radius:8px;">
+      <a href="https://github.com/umrashrf/postbase/blob/main/assets/img/expresjs.png?raw=true" target="_blank">
+        <img alt="Express.js" src="https://github.com/umrashrf/postbase/raw/main/assets/img/expresjs.png?raw=true" style="max-height:60px; max-width:100%;">
+      </a>
+    </td>
+    <td align="center" valign="middle" style="background-color:white; height:100px; width:128px; padding:10px; border-radius:8px;">
+      <a href="https://github.com/umrashrf/postbase/blob/main/assets/img/postgres.png?raw=true" target="_blank">
+        <img alt="PostgreSQL" src="https://github.com/umrashrf/postbase/raw/main/assets/img/postgres.png?raw=true" style="max-height:60px; max-width:100%;">
+      </a>
+    </td>
+    <td align="center" valign="middle" style="background-color:white; height:100px; width:128px; padding:10px; border-radius:8px;">
+      <a href="https://github.com/umrashrf/postbase/blob/main/assets/img/better-auth-logo-light.4b03f444.png?raw=true" target="_blank">
+        <img alt="Better-Auth" src="https://github.com/umrashrf/postbase/raw/main/assets/img/better-auth-logo-light.4b03f444.png?raw=true" style="max-height:60px; max-width:100%;">
+      </a>
+    </td>
+    <td align="center" valign="middle" style="background-color:white; height:100px; width:128px; padding:10px; border-radius:8px;">
+      <a href="https://github.com/umrashrf/postbase/blob/main/assets/img/letsencrypt-logo-horizontal.png?raw=true" target="_blank">
+        <img alt="Let's Encrypt" src="https://github.com/umrashrf/postbase/raw/main/assets/img/letsencrypt-logo-horizontal.png?raw=true" style="max-height:60px; max-width:100%;">
+      </a>
+    </td>
+  </tr>
+</table>
 
 # 🐘 Postbase (Demo)
 
