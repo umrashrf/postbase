@@ -1,6 +1,7 @@
 import { getSession } from "./auth";
 import { getDB } from "../lib/postbase/db";
 import { createClientStorage } from "../lib/postbase/storage";
+import { RtdbClient } from '../lib/postbase/rtdb';
 
 async function getBetterAuthToken() {
     const { data } = await getSession();
@@ -18,4 +19,9 @@ export const db = getDB({
 export const storage = createClientStorage({
     baseUrl: import.meta.env.VITE_API_BASE + '/storage',
     getAuthToken: getBetterAuthToken,
+});
+
+export const rtdbClient = new RtdbClient({
+    restUrl: import.meta.env.VITE_API_BASE,
+    wsUrl: import.meta.env.VITE_API_BASE.replace('https://', 'wss://'),
 });
