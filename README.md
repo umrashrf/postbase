@@ -174,4 +174,6 @@ const { onRequest } = require("firebase-functions/https");
 
 MIT
 
+## Buy me a coffee
+
 [<img src="https://i.imgur.com/oRFWBv7.png" height="80px" />](https://buymeacoffee.com/umrashrf)
