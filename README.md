@@ -18,6 +18,7 @@ Demo Preact app is included !
 
 - [x] Sign Up ➕👤
 - [x] Sign In 🔑
+- [x] Sign in with Google/Facebook/Apple etc. ➕👤
 - [x] Forgot Password ❓🔐
 - [x] Reset Password ♻️🔐
 - [x] Email Verification Email ✉️✔️
