@@ -173,3 +173,5 @@ const { onRequest } = require("firebase-functions/https");
 ## License 
 
 MIT
+
+[<img src="https://i.imgur.com/oRFWBv7.png" height="80px" />](https://buymeacoffee.com/umrashrf)
