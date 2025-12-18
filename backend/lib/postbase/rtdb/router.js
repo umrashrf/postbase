@@ -1,5 +1,7 @@
 import express from 'express';
 
+import { makeRtdbEvaluator } from './rulesEngine.js';
+
 /**
  * rtdb_nodes schema assumptions:
  * - path TEXT PRIMARY KEY
@@ -10,7 +12,9 @@ import express from 'express';
  * - updated_at TIMESTAMPTZ
  */
 
-export function createRtdbRouter({ pool, notify }) {
+export function createRtdbRouter({ pool, notify, rulesModule }) {
+    const rules = makeRtdbEvaluator(rulesModule);
+
     const router = express.Router();
 
     const clean = p => (p || '').replace(/^\/+|\/+$/g, '');
@@ -35,6 +39,17 @@ export function createRtdbRouter({ pool, notify }) {
         );
 
         if (!r.rowCount) return res.sendStatus(404);
+
+        const allowed = await rules.evaluate("read", {
+            auth: req.auth || null,
+            method: "GET"
+        }, {
+            path,
+            value: r
+        });
+
+        if (!allowed) return res.sendStatus(403);
+
         res.json(r.rows[0].value);
     });
 
@@ -44,6 +59,17 @@ export function createRtdbRouter({ pool, notify }) {
     router.put('/*', async (req, res) => {
         const path = clean(req.params[0]);
         const value = req.body ?? {};
+
+        const allowed = await rules.evaluate("write", {
+            auth: req.auth || null,
+            method: "PUT",
+            body: value
+        }, {
+            path,
+            newValue: value
+        });
+
+        if (!allowed) return res.sendStatus(403);
 
         const { key, parent } = splitPath(path);
 
@@ -70,6 +96,17 @@ export function createRtdbRouter({ pool, notify }) {
     router.patch('/*', async (req, res) => {
         const path = clean(req.params[0]);
         const patch = req.body ?? {};
+
+        const allowed = await rules.evaluate("write", {
+            auth: req.auth || null,
+            method: "PATCH",
+            body: patch
+        }, {
+            path,
+            newValue: patch
+        });
+
+        if (!allowed) return res.sendStatus(403);
 
         const cur = await pool.query(
             `SELECT value FROM rtdb_nodes WHERE path = $1`,
@@ -104,6 +141,17 @@ export function createRtdbRouter({ pool, notify }) {
     // =====================================================
     router.delete('/*', async (req, res) => {
         const path = clean(req.params[0]);
+
+        const allowed = await rules.evaluate("delete", {
+            auth: req.auth || null,
+            method: "DELETE",
+            body: patch
+        }, {
+            path,
+            newValue: req.body ?? {},
+        });
+
+        if (!allowed) return res.sendStatus(403);
 
         await pool.query(
             `

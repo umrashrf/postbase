@@ -4,8 +4,10 @@ import { WebSocketServer } from 'ws';
 import bodyParser from 'body-parser';
 
 import { pool, resetDb } from './db.js';
+import { authMiddleware } from '../middlewares/auth.js';
 import { createRtdbRouter } from '../rtdb/router.js';
 import { createRtdbWs } from '../rtdb/ws.js';
+import rules from './rules.js';
 
 export async function startTestServer() {
     await resetDb();
@@ -16,13 +18,16 @@ export async function startTestServer() {
     const server = http.createServer(app);
     const wss = new WebSocketServer({ server });
 
+    const authenticate = authMiddleware(pool);
     const rtdbWs = createRtdbWs(wss);
 
     app.use(
         '/rtdb',
+        authenticate,
         createRtdbRouter({
             pool,
             notify: rtdbWs.notify,
+            rulesModule: rules,
         })
     );
 
