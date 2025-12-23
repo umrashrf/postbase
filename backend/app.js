@@ -7,9 +7,12 @@ import { createPool } from './lib/postbase/db.js';
 import { makeGenericRouter } from './lib/postbase/genericRouter.js';
 import { createStorageRouter } from './lib/postbase/storage.js';
 import { createLocalStorage } from './postbase/local-storage.js';
+import { createRtdbWs } from './lib/postbase/rtdb/ws.js';
+import { createRtdbRouter } from './lib/postbase/rtdb/router.js';
 //import { makePostbaseAdminClient } from './postbase/adminClient.js';
 import rulesModuleDB from './postbase_db_rules.js';
 import rulesModuleStorage from './postbase_storage_rules.js';
+import rulesModuleRTDB from './postbase_rtdb_rules.js';
 import { authenticate } from './middlewares/auth_middleware.js';
 import { auth } from './router/auth.js';
 
@@ -41,6 +44,18 @@ const genericRouter = makeGenericRouter({ pool, rulesModule: rulesModuleDB, auth
 router.use('/db', authenticate, genericRouter);
 
 router.use('/storage', authenticate, createStorageRouter(UPLOAD_DESTINATION, bucket, rulesModuleStorage));
+
+const rtdbWs = createRtdbWs(wss);
+
+router.use(
+    '/rtdb',
+    authenticate,
+    createRtdbRouter({
+        pool,
+        notify: rtdbWs.notify,
+        rulesModule: rulesModuleRTDB,
+    })
+);
 
 // For local testing
 // app.use(cors({
