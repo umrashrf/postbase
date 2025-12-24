@@ -198,6 +198,10 @@ class DocumentsSnapshot {
     forEach(callback) {
         this.docs.forEach(callback);
     }
+
+    map(callback) {
+        return this.docs.map(callback);
+    }
 }
 
 class DocumentSnapshot {
