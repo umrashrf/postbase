@@ -1,5 +1,5 @@
 import { betterAuth } from "better-auth";
-import { createPool } from "../lib/postbase/db.js";
+import { createPool } from "./lib/postbase/db.js";
 //import { phoneNumber } from "better-auth/plugins"
 //import { makePostbaseAdminClient } from "./lib/postbase/adminClient.js";
 
