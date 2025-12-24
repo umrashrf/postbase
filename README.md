@@ -137,7 +137,7 @@ reference.onSnapshot(docs => {
 
 ```javascript
 import { createAdminClient } from './lib/postbase/compat/admin.js';
-import { authClient } from './auth.js';
+import { authClient } from './admin/auth.js';
 
 const admin = createAdminClient({ authClient });
 
