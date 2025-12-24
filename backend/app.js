@@ -6,7 +6,7 @@ import { toNodeHandler } from "better-auth/node";
 import { createPool } from './lib/postbase/db.js';
 import { makeGenericRouter } from './lib/postbase/genericRouter.js';
 import { createStorageRouter } from './lib/postbase/storage.js';
-import { createLocalStorage } from './postbase/local-storage.js';
+import { createLocalStorage } from './lib/postbase/local-storage.js';
 import { createRtdbWs } from './lib/postbase/rtdb/ws.js';
 import { createRtdbRouter } from './lib/postbase/rtdb/router.js';
 //import { makePostbaseAdminClient } from './postbase/adminClient.js';
