@@ -18,3 +18,10 @@ Allow post-receive hook to copy over files.
 ```
 sudo chown -R you_username:root /var/www/html
 ```
+
+Lastly,
+
+```
+git remote add deploy server_username@your_server:/your/server/your_repo
+git push deploy
+```
