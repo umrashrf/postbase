@@ -34,7 +34,7 @@ Installation instructions https://certbot.eff.org/instructions?ws=other&os=pip
 After installing the certbot, generate the certificates and private keys.
 
 ```
-cd nginx/letsencrypt
+cd nginx && rm -rf letsencrypt
 sudo certbot certonly --manual --preferred-challenges dns-01 -d your_website.com -d www.your_website.com
 ```
 
