@@ -29,7 +29,7 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
         'LIKE',
         'ILIKE',
         'IN',
-        'array-contains', // only supports strings "large" in ["red", "blue", "large"]
+        'ARRAY-CONTAINS', // only supports strings "large" in ["red", "blue", "large"]
     ]);
 
     function isDocumentRef(value) {
@@ -66,7 +66,7 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
             if (!ALLOWED_OPS.has(op.toUpperCase())) throw new Error(`Invalid operator: ${op}`);
 
             // array-contains
-            if (op.toUpperCase() === 'array-contains') {
+            if (op.toUpperCase() === 'ARRAY-CONTAINS') {
                 if (value && typeof value === 'object' && value._type === 'ref') {
                     params.push(JSON.stringify([value]));
                     whereClauses.push(`data->'${field}' @> $${idx++}::jsonb`);
