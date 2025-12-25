@@ -63,10 +63,10 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
 
         for (const f of filters) {
             const { field, op, value } = f;
-            if (!ALLOWED_OPS.has(op)) throw new Error(`Invalid operator: ${op}`);
+            if (!ALLOWED_OPS.has(op.toUpperCase())) throw new Error(`Invalid operator: ${op}`);
 
             // array-contains
-            if (op === 'array-contains') {
+            if (op.toUpperCase() === 'array-contains') {
                 if (value && typeof value === 'object' && value._type === 'ref') {
                     params.push(JSON.stringify([value]));
                     whereClauses.push(`data->'${field}' @> $${idx++}::jsonb`);
@@ -77,7 +77,7 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
             }
 
             // IN
-            else if (op === 'IN') {
+            else if (op.toUpperCase() === 'IN') {
                 if (!Array.isArray(value) || value.length === 0)
                     throw new Error('IN requires non-empty array');
                 const placeholders = value.map(() => `$${idx++}`);
@@ -86,7 +86,7 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
             }
 
             // LIKE / ILIKE
-            else if (op === 'LIKE' || op === 'ILIKE') {
+            else if (op.toUpperCase() === 'LIKE' || op.toUpperCase() === 'ILIKE') {
                 params.push(value);
                 whereClauses.push(`data->>'${field}' ${op} $${idx++}`);
             }
