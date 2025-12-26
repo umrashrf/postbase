@@ -124,6 +124,36 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
         return parts.length ? `ORDER BY ${parts.join(', ')}` : '';
     }
 
+    function applyFieldValues(target, updates) {
+        const now = new Date().toISOString();
+        const result = { ...target };
+
+        for (const [k, v] of Object.entries(updates || {})) {
+            if (!v || typeof v !== "object" || Array.isArray(v)) {
+                result[k] = v;
+                continue;
+            }
+
+            // increment
+            if (v._op === "increment") {
+                const base = Number(result[k] ?? 0);
+                result[k] = base + Number(v.by ?? 1);
+                continue;
+            }
+
+            // serverTimestamp
+            if (v._op === "serverTimestamp") {
+                result[k] = now;
+                continue;
+            }
+
+            // recurse
+            result[k] = applyFieldValues(result[k] ?? {}, v);
+        }
+
+        return result;
+    }
+
     // === QUERY / LIST ===
     router.post('/:table/query', async (req, res) => {
         const table = req.params.table;
@@ -167,7 +197,8 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
     router.post('/:table', async (req, res) => {
         const table = req.params.table;
         try {
-            const payload = req.body || {};
+            const raw = req.body || {};
+            const payload = applyFieldValues({}, raw);
             const request = mapRequest(req);
             request.resource = payload;
 
@@ -218,13 +249,15 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
         const id = req.params.id;
         try {
             const existing = await runQuery(pool, `SELECT data FROM "${table}" WHERE id=$1 LIMIT 1`, [id]);
-            const payload = req.body || {};
+            const raw = req.body || {};
 
-            let current = payload;
+            let current = raw;
             if (existing.rowCount) {
                 current = existing.rows[0].data;
             }
             current.id = id; // for rules engine
+
+            const payload = applyFieldValues(current, raw);
 
             const request = mapRequest(req);
             request.resource = current;
@@ -273,7 +306,7 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
             if (!allowed) return res.status(403).json({ error: 'forbidden' });
 
             const payload = req.body || {};
-            const merged = { ...current, ...payload };
+            const merged = applyFieldValues(current, payload);
             const sql = `
                 UPDATE "${table}"
                 SET data = $1, updated_at = now() at time zone 'UTC'
@@ -381,14 +414,16 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
     router.post('/:parentTable/:parentId/:subTable', async (req, res) => {
         const { parentTable, parentId, subTable } = req.params;
         try {
-            const payload = req.body || {};
+            const raw = req.body || {};
 
             // enforce parent link with path support (fix for same-name collections)
-            payload.parent = {
+            raw.parent = {
                 collectionName: parentTable,
                 id: parentId,
                 path: `${parentTable}/${parentId}/${subTable}`
             };
+
+            const payload = applyFieldValues({}, raw);
 
             const request = mapRequest(req);
             request.resource = payload;
@@ -471,7 +506,8 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
             const allowed = await evaluator.evaluate(subTable, 'update', request, current);
             if (!allowed) return res.status(403).json({ error: 'forbidden' });
 
-            const payload = req.body || {};
+            const raw = req.body || {};
+            const payload = applyFieldValues(current, raw);
             payload.parent = current.parent; // prevent overriding parent
 
             const sql = `
