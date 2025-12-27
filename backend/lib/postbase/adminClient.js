@@ -77,7 +77,7 @@ export const FieldValue = {
 };
 
 export const FieldPath = (path) => ({ _fieldPath: path });
-export const documentId = (id) => ({ _documentId: id });
+export const documentId = () => "__id";
 
 /* ======================================================================= */
 /*  Admin Client Factory                                                   */
@@ -109,7 +109,13 @@ export function makePostbaseAdminClient({ pool }) {
             const { field, op, value } = f;
             const sqlOp = op === "==" ? "=" : op;
 
-            if (op === "IN") {
+            if (field === "__id") {
+                params.push(value);
+                where.push(`id ${sqlOp} $${i++}`);
+                continue;
+            }
+
+            else if (op === "IN") {
                 if (!Array.isArray(value)) throw new Error("IN requires array");
                 const ph = value.map(() => `$${i++}`).join(",");
                 params.push(...value);
