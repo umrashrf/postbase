@@ -63,10 +63,19 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
 
         for (const f of filters) {
             const { field, op, value } = f;
+
             if (!ALLOWED_OPS.has(op.toUpperCase())) throw new Error(`Invalid operator: ${op}`);
 
+            // Document ID filter
+            if (field === "__id") {
+                const sqlOp = op === "==" ? "=" : op;
+                params.push(value);
+                whereClauses.push(`id ${sqlOp} $${idx++}`);
+                continue;
+            }
+
             // array-contains
-            if (op.toUpperCase() === 'ARRAY-CONTAINS') {
+            else if (op.toUpperCase() === 'ARRAY-CONTAINS') {
                 if (value && typeof value === 'object' && value._type === 'ref') {
                     params.push(JSON.stringify([value]));
                     whereClauses.push(`data->'${field}' @> $${idx++}::jsonb`);

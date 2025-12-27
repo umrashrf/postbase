@@ -636,4 +636,4 @@ export const FieldValue = {
 
 export const FieldPath = (path) => ({ _fieldPath: path });
 
-export const documentId = (id) => ({ _documentId: id });
+export const documentId = () => "__id";
