@@ -46,7 +46,7 @@ Special thanks to [@better-auth/better-auth](https://github.com/better-auth/bett
 
 - [x] Admin SDK 👑🗄️
 - [x] Nginx Config 🧱
-- [x] Systemd Config ⚙️
+- [x] Systemd Service ⚙️
 - [x] Git Push Deployment ⬆️🐙
 
 ## Disclaimer !!!
