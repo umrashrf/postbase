@@ -5,6 +5,7 @@
     "author": "Umair Ashraf",
     "url": "http://github.com/umrashrf/postbase",
     "scripts": {
+        "dev": "nodemon local.js",
         "migrate:up": "node-pg-migrate up",
         "migrate:down": "node-pg-migrate down",
         "migrate:redo": "node-pg-migrate redo",
