@@ -10,7 +10,12 @@ git reset --hard
 
 cd $GIT_WORK_TREE
 git checkout .
-cd webapp
+
+cd backend
+npm install
+npm run build
+
+cd frontend
 npm install
 npm run build
 
