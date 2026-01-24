@@ -14,7 +14,7 @@ import rulesModuleDB from './postbase_db_rules.js';
 import rulesModuleStorage from './postbase_storage_rules.js';
 import rulesModuleRTDB from './postbase_rtdb_rules.js';
 import { authenticate } from './middlewares/auth_middleware.js';
-import { auth } from './router/auth.js';
+import { auth } from './auth.js';
 
 const UPLOAD_DESTINATION = '/absolute/path/to/where/user/uploads/will/be/stored'; // use public/uploads directory if using React/Vite
 const UPLOAD_PUBLIC_URL = 'https://www.yourwebsite.com/uploads';
