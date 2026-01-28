@@ -16,8 +16,9 @@ import rulesModuleRTDB from './postbase_rtdb_rules.js';
 import { authenticate } from './middlewares/auth_middleware.js';
 import { auth } from './auth.js';
 
-const UPLOAD_DESTINATION = '/absolute/path/to/where/user/uploads/will/be/stored'; // use public/uploads directory if using React/Vite
-const UPLOAD_PUBLIC_URL = 'https://www.yourwebsite.com/uploads';
+const POSTBASE_STORAGE_ROOT_DIR = process.env.POSTBASE_STORAGE_ROOT_DIR || '/var/www/html/www.yourwebsite.com/uploads';
+const POSTBASE_STORAGE_PUBLIC_URL = process.env.POSTBASE_STORAGE_PUBLIC_URL || 'http://localhost:5173/uploads';
+
 
 // Initialize DB pool using env variables
 const pool = createPool({
@@ -29,8 +30,8 @@ const pool = createPool({
 
 // This is firebase storage alternative
 const bucket = createLocalStorage(
-    UPLOAD_DESTINATION,
-    UPLOAD_PUBLIC_URL // this is needed for making public urls
+    POSTBASE_STORAGE_ROOT_DIR,
+    POSTBASE_STORAGE_PUBLIC_URL // this is needed for making public urls
 ).bucket();
 
 export const app = express();
@@ -43,7 +44,7 @@ router.all("/auth/*", toNodeHandler(auth));
 const genericRouter = makeGenericRouter({ pool, rulesModule: rulesModuleDB, authField: 'auth' });
 router.use('/db', authenticate, genericRouter);
 
-router.use('/storage', authenticate, createStorageRouter(UPLOAD_DESTINATION, bucket, rulesModuleStorage));
+router.use('/storage', authenticate, createStorageRouter(POSTBASE_STORAGE_ROOT_DIR, bucket, rulesModuleStorage));
 
 const rtdbWs = createRtdbWs(wss);
 
