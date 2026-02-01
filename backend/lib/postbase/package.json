@@ -7,7 +7,7 @@
         "migrate:down": "node-pg-migrate down",
         "migrate:redo": "node-pg-migrate redo",
         "migrate:create": "node-pg-migrate create",
-        "test": "NODE_OPTIONS=--experimental-vm-modules TEST_DB_URL=postgres://postgres:mysecretpassword@localhost:5432/test_db_name jest"
+        "test": "NODE_OPTIONS=--experimental-vm-modules TEST_DB_URL=postgres://postgres:yoursecretpassword@localhost:5432/postbase_test jest"
     },
     "devDependencies": {
         "jest": "^30.2.0",
