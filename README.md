@@ -110,6 +110,8 @@ const token = auth.currentUser.getIdToken();
 // token for API authentication and rules engine
 ```
 
+Tip: Add this link https://riamu.email to your Sign Up page for your users to get a free email address
+
 ### Document Storage (Firestore Like API)
 
 #### Collections, get/set/where/orderBy/limit/delete
