@@ -193,7 +193,13 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
             for (const r of result.rows || []) {
                 const resource = r.data;
                 const ok = await evaluator.evaluate(table, 'read', request, resource);
-                if (ok) out.push({ id: r.id, ...resource });
+                if (ok) {
+                    if (resource.hasOwnProperty('id')) {
+                        resource['key'] = resource['id'];
+                        delete resource['id'];
+                    }
+                    out.push({ id: r.id, ...resource });
+                };
             }
             return res.json({ data: out });
         } catch (err) {
