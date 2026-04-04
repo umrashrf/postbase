@@ -2,9 +2,6 @@
 
 set -x
 
-PATH="/home/server/.nvm/versions/node/v24.12.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin"
-export PATH
-
 GIT_WORK_TREE="/your/server/your_repo"
 export GIT_WORK_TREE
 
@@ -21,4 +18,4 @@ cd ../frontend
 npm install
 npm run build
 
-rsync -avh /your/server/your_repo/frontend/dist/ /var/www/html/your_website
+rsync -avh /your/server/your_repo/dist/ /var/www/html/your_website
