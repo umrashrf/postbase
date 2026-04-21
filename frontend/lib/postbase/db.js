@@ -99,13 +99,14 @@ class CollectionReference {
     /** Directly get all docs (no filters) */
     async get() {
         const query = new QueryBuilder(this);
-        const docs = await query.get();
+        const data = await query.get();
+        const { docs } = data;
         // If there are no query filters, wrap in QuerySnapshot
         if (query._filters.length === 0 && query._order.length === 0 && !query._limit) {
             return new QuerySnapshot(docs);
         }
         // Otherwise, return array of DocumentSnapshot as before
-        return docs;
+        return data;
     }
 
     /** Start a query builder chain */
