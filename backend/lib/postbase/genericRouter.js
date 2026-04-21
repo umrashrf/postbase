@@ -395,7 +395,11 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
             filters.push({
                 field: 'parent',
                 op: '==',
-                value: { collectionName: parentTable, id: parentId }
+                value: {
+                    collectionName: parentTable,
+                    id: parentId,
+                    path: `${parentTable}/${parentId}`,
+                }
             });
 
             let { whereSql, params } = buildWhere(filters);
@@ -435,7 +439,7 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
             raw.parent = {
                 collectionName: parentTable,
                 id: parentId,
-                path: `${parentTable}/${parentId}/${subTable}`
+                path: `${parentTable}/${parentId}`
             };
 
             const payload = applyFieldValues({}, raw);
@@ -476,7 +480,7 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
 
             // validate belongs to parent
             if (!row.data.parent ||
-                row.data.parent.path !== `${parentTable}/${parentId}/${subTable}` ||
+                row.data.parent.path !== `${parentTable}/${parentId}` ||
                 row.data.parent.id !== parentId) {
                 return res.status(404).json({ error: 'not_found' });
             }
@@ -509,7 +513,7 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
 
             // enforce parent link
             if (!current.parent ||
-                current.parent.path !== `${parentTable}/${parentId}/${subTable}` ||
+                current.parent.path !== `${parentTable}/${parentId}` ||
                 current.parent.id !== parentId)
                 return res.status(404).json({ error: 'not_found' });
 
@@ -555,7 +559,7 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
             const current = existing.rows[0].data;
 
             if (!current.parent ||
-                current.parent.path !== `${parentTable}/${parentId}/${subTable}` ||
+                current.parent.path !== `${parentTable}/${parentId}` ||
                 current.parent.id !== parentId)
                 return res.status(404).json({ error: 'not_found' });
 
