@@ -41,6 +41,7 @@ export function createAuthClient(auth) {
         }
     }
 
+    checkSession(); // immediate initial call
     // Simple polling loop (every 5 seconds by default)
     const POLL_INTERVAL = 5000;
     let pollTimer = setInterval(checkSession, POLL_INTERVAL);
@@ -66,7 +67,6 @@ export function createAuthClient(auth) {
                 }
                 notifySubscribers(currentUser);
             }
-            callback(currentUser);
         })();
 
         // Return unsubscribe
