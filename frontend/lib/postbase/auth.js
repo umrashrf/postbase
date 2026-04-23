@@ -49,26 +49,28 @@ export function createAuthClient(auth) {
      * Adds a listener for auth state changes.
      * Returns an unsubscribe function (for React/Preact useEffect cleanup).
      */
-    function onAuthStateChanged(callback) {
+    function onAuthStateChanged(callback, firstCall = true) {
         subscribers.add(callback);
 
-        // Immediately invoke with current user
-        (async () => {
-            const { data } = await auth.getSession();
-            const newUser = data?.user ?? null;
-            if (newUser) {
-                newUser.uid = newUser.id;
-            }
-            currentUser = newUser;
-            if (currentUser) {
-                currentUser.getIdToken = getIdToken;
-            }
-            try {
-                callback(newUser);
-            } catch (err) {
-                console.error("Error in onAuthStateChanged listener:", err);
-            }
-        })();
+        if (firstCall) {
+            // Immediately invoke with current user
+            (async () => {
+                const { data } = await auth.getSession();
+                const newUser = data?.user ?? null;
+                if (newUser) {
+                    newUser.uid = newUser.id;
+                }
+                currentUser = newUser;
+                if (currentUser) {
+                    currentUser.getIdToken = getIdToken;
+                }
+                try {
+                    callback(newUser);
+                } catch (err) {
+                    console.error("Error in onAuthStateChanged listener:", err);
+                }
+            })();
+        }
 
         // Return unsubscribe
         return () => {
