@@ -41,7 +41,6 @@ export function createAuthClient(auth) {
         }
     }
 
-    checkSession(); // immediate initial call
     // Simple polling loop (every 5 seconds by default)
     const POLL_INTERVAL = 5000;
     let pollTimer = setInterval(checkSession, POLL_INTERVAL);
@@ -60,12 +59,14 @@ export function createAuthClient(auth) {
             if (newUser) {
                 newUser.uid = newUser.id;
             }
-            if (JSON.stringify(newUser) !== JSON.stringify(currentUser)) {
-                currentUser = newUser;
-                if (currentUser) {
-                    currentUser.getIdToken = getIdToken;
-                }
-                notifySubscribers(currentUser);
+            currentUser = newUser;
+            if (currentUser) {
+                currentUser.getIdToken = getIdToken;
+            }
+            try {
+                callback(newUser);
+            } catch (err) {
+                console.error("Error in onAuthStateChanged listener:", err);
             }
         })();
 
