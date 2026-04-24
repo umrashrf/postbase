@@ -508,7 +508,11 @@ class QueryBuilder {
                 if (msg.type === 'init' || msg.type === 'change') {
                     let data = msg.data;
                     if (!Array.isArray(msg.data)) {
+                        // nested data found, meaning we have op and id as well
                         data = [msg.data];
+                        if (msg.data.hasOwnProperty('op')) {
+                            data._data = msg.data;
+                        }
                     }
                     const docs = (data || []).map(doc => {
                         const data = deserializeRefs(this.collectionRef.db, doc.data || doc);
