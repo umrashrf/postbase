@@ -191,9 +191,7 @@ function deserializeRefs(db, obj) {
 
 class DocumentsSnapshot {
     constructor(docs) {
-        this.docs = docs;        // array of DocumentSnapshot
-        this.size = docs.length; // convenience property
-        this.empty = docs.length === 0;
+        this.docs = docs; // array of DocumentSnapshot
     }
 
     forEach(callback) {
@@ -202,6 +200,14 @@ class DocumentsSnapshot {
 
     map(callback) {
         return this.docs.map(callback);
+    }
+
+    get empty() {
+        return this.docs.length === 0;
+    }
+
+    get size() {
+        return this.docs.length;
     }
 }
 
@@ -347,6 +353,10 @@ class QuerySnapshot {
         this.docs.forEach(callback);
     }
 
+    map(callback) {
+        return this.docs.map(callback);
+    }
+
     get empty() {
         return this.docs.length === 0;
     }
@@ -486,6 +496,8 @@ class QueryBuilder {
     }
 
     onSnapshot(callback, errorCallback) {
+        const self = this;
+
         const wsUrl = this.collectionRef.db.baseUrl
             .replace(/^https?/, 'wss')
             + `/${this.collectionRef.fullPath}/stream`;
@@ -501,29 +513,13 @@ class QueryBuilder {
             //console.log('Sent query success');
         };
 
-        ws.onmessage = (event) => {
+        ws.onmessage = async (event) => {
             //console.log('ws.onmessage');
             try {
                 const msg = JSON.parse(event.data);
                 if (msg.type === 'init' || msg.type === 'change') {
-                    let data = msg.data;
-                    if (!Array.isArray(msg.data)) {
-                        // nested data found, meaning we have op and id as well
-                        data = [msg.data];
-                    }
-                    const docs = (data || []).map(doc => {
-                        const data = deserializeRefs(this.collectionRef.db, doc.data || doc);
-                        if (msg.data.hasOwnProperty('op')) {
-                            data._data = msg.data;
-                        }
-                        return new DocumentSnapshot(
-                            doc.id,
-                            data,
-                            `${this.collectionRef.fullPath}/${doc.id}`,
-                            this.collectionRef.db
-                        );
-                    });
-                    callback(new QuerySnapshot(docs), msg.type);
+                    const docs = await self.get();
+                    callback(docs, msg.type);
                 } else if (msg.type === 'error') {
                     errorCallback(msg);
                 }
