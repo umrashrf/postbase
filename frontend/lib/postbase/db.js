@@ -499,7 +499,8 @@ class QueryBuilder {
         const self = this;
 
         const wsUrl = this.collectionRef.db.baseUrl
-            .replace(/^https?/, 'wss')
+            .replace(/^https/, 'wss')
+            .replace(/^http/, 'ws')
             + `/${this.collectionRef.fullPath}/stream`;
 
         //console.log(`Requesting a new web socket connection`, wsUrl);
