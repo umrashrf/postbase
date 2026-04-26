@@ -66,52 +66,74 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
 
             if (!ALLOWED_OPS.has(op.toUpperCase())) throw new Error(`Invalid operator: ${op}`);
 
-            // Document ID filter
-            if (field === "__id") {
-                const sqlOp = op === "==" ? "=" : op;
-                params.push(value);
-                whereClauses.push(`id ${sqlOp} $${idx++}`);
-                continue;
-            }
-
             // array-contains
-            else if (op.toUpperCase() === 'ARRAY-CONTAINS') {
+            if (op.toUpperCase() === 'ARRAY-CONTAINS') {
+                let _field = field;
+                _field = `data->'${field}'`;
+                // Document ID filter
+                if (field === "__id") {
+                    _field = 'id';
+                }
                 if (value && typeof value === 'object' && value._type === 'ref') {
                     params.push(JSON.stringify([value]));
-                    whereClauses.push(`data->'${field}' @> $${idx++}::jsonb`);
+                    whereClauses.push(`${_field} @> $${idx++}::jsonb`);
                     continue;
                 }
                 params.push(value);
-                whereClauses.push(`(data->'${field}') ? $${idx++}`);
+                whereClauses.push(`(${_field}) ? $${idx++}`);
             }
 
             // IN
             else if (op.toUpperCase() === 'IN') {
+                let _field = field;
+                _field = `data->>'${field}'`;
+                // Document ID filter
+                if (field === "__id") {
+                    _field = 'id';
+                }
                 if (!Array.isArray(value) || value.length === 0)
                     throw new Error('IN requires non-empty array');
                 const placeholders = value.map(() => `$${idx++}`);
                 params.push(...value);
-                whereClauses.push(`data->>'${field}' IN (${placeholders.join(',')})`);
+                whereClauses.push(`${_field} IN (${placeholders.join(',')})`);
             }
 
             // LIKE / ILIKE
             else if (op.toUpperCase() === 'LIKE' || op.toUpperCase() === 'ILIKE') {
+                let _field = field;
+                _field = `data->>'${field}'`;
+                // Document ID filter
+                if (field === "__id") {
+                    _field = 'id';
+                }
                 params.push(value);
-                whereClauses.push(`data->>'${field}' ${op} $${idx++}`);
+                whereClauses.push(`${_field} ${op} $${idx++}`);
             }
 
             else if (isDocumentRef(value)) {
+                let _field = field;
+                _field = `data->'${field}'`;
+                // Document ID filter
+                if (field === "__id") {
+                    _field = 'id';
+                }
                 const sqlOp = op === "==" ? "=" : op;
                 params.push(resolveReference(value));
-                whereClauses.push(`data->'${field}'->>'path' ${sqlOp} $${idx++}`);
+                whereClauses.push(`${_field}->>'path' ${sqlOp} $${idx++}`);
                 continue;
             }
 
             // default (string or primitive)
             else {
+                let _field = field;
+                _field = `data->>'${field}'`;
+                // Document ID filter
+                if (field === "__id") {
+                    _field = 'id';
+                }
                 const sqlOp = op === "==" ? "=" : op;
                 params.push(value);
-                whereClauses.push(`data->>'${field}' ${sqlOp} $${idx++}`);
+                whereClauses.push(`${_field} ${sqlOp} $${idx++}`);
             }
         }
 
