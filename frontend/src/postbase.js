@@ -1,7 +1,7 @@
-import { getBetterAuthToken } from "./auth";
 import { getDB } from "../lib/postbase/db";
 import { createClientStorage } from "../lib/postbase/storage";
 import { RtdbClient } from '../lib/postbase/rtdb';
+import { getBetterAuthToken } from "./auth";
 
 export const db = getDB({
     baseUrl: import.meta.env.VITE_API_BASE + '/db',
