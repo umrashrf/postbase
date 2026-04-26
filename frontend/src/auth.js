@@ -1,5 +1,6 @@
 import { createAuthClient as createBetterAuthClient } from 'better-auth/client';
 import { createAuthClient } from '../lib/postbase/auth';
+import { auth as firebaseAuth } from '../lib/postbase/compat/firebase/auth';
 
 export const authClient = createBetterAuthClient({
     baseURL: import.meta.env.VITE_API_BASE + '/auth', // Specify if on a different domain/path,
@@ -20,7 +21,13 @@ export async function getBetterAuthToken() {
     return null;
 }
 
-export const { signUp, signIn, signOut: _signOut, getSession } = authClient;
+// better-auth
+export const {
+    signUp,
+    signIn,
+    signOut: _signOut,
+    getSession,
+} = authClient;
 
 export const signOut = (...args) => {
     const authToken = window.sessionStorage.getItem('authToken');
@@ -30,3 +37,18 @@ export const signOut = (...args) => {
     // at the end because it can trigger navigation
     _signOut.apply(this, ...args);
 };
+
+// firebase auth
+export const getAuth = auth;
+export const {
+    createUserWithEmailAndPassword,
+    sendEmailVerification,
+    sendPasswordResetEmail,
+    signInWithEmailAndPassword,
+    updateProfile,
+    updateEmail,
+    updatePassword,
+} = firebaseAuth(auth);
+
+// firebase auth + better-auth
+export const onAuthStateChanged = auth.onAuthStateChanged;
