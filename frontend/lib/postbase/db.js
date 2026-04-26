@@ -514,13 +514,29 @@ class QueryBuilder {
             //console.log('Sent query success');
         };
 
-        ws.onmessage = async (event) => {
+        ws.onmessage = (event) => {
             //console.log('ws.onmessage');
             try {
                 const msg = JSON.parse(event.data);
                 if (msg.type === 'init' || msg.type === 'change') {
-                    const docs = await self.get();
-                    callback(docs, msg.type);
+                    let data = msg.data;
+                    if (!Array.isArray(msg.data)) {
+                        // nested data found, meaning we have op and id as well
+                        data = [msg.data];
+                    }
+                    const docs = (data || []).map(doc => {
+                        const data = deserializeRefs(this.collectionRef.db, doc.data || doc);
+                        if (msg.data.hasOwnProperty('op')) {
+                            data._data = msg.data;
+                        }
+                        return new DocumentSnapshot(
+                            doc.id,
+                            data,
+                            `${this.collectionRef.fullPath}/${doc.id}`,
+                            this.collectionRef.db
+                        );
+                    });
+                    callback(new QuerySnapshot(docs), msg.type);
                 } else if (msg.type === 'error') {
                     errorCallback(msg);
                 }
