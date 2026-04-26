@@ -1,6 +1,6 @@
 //import { createAuthClient } from '../../auth';
 
-export function auth(auth) {
+export function createFirebaseAuthClient(postbaseAuthClient) {
     // if (!(auth instanceof createAuthClient)) {
     //     throw new Error("");
     // }
@@ -68,6 +68,19 @@ export function auth(auth) {
 
     const sendPasswordResetEmail = async () => { };
 
+    const signOut = async (...args) => {
+        let auth = postbaseAuthClient;
+        if (args && args.length > 0) {
+            auth = args[0];
+        }
+        const authToken = window.sessionStorage.getItem('authToken');
+        if (authToken) {
+            window.sessionStorage.removeItem('authToken');
+        }
+        // at the end because it can trigger navigation
+        auth.signOut.apply(this, []);
+    };
+
     return {
         createUserWithEmailAndPassword,
         sendEmailVerification,
@@ -76,5 +89,6 @@ export function auth(auth) {
         updateProfile,
         updateEmail,
         updatePassword,
+        signOut,
     };
 }
