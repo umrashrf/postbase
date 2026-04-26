@@ -39,15 +39,15 @@ export const signOut = (...args) => {
 };
 
 // firebase auth
+export const getAuth = auth;
 export const {
-    getAuth,
     createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
     sendEmailVerification,
+    sendPasswordResetEmail,
+    signInWithEmailAndPassword,
     updateProfile,
     updateEmail,
     updatePassword,
-    sendPasswordResetEmail,
 } = firebaseAuth(auth);
 
 // firebase auth + better-auth
