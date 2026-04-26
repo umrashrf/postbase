@@ -37,6 +37,6 @@ export const {
     updatePassword,
     onAuthStateChanged,
     getBetterAuthToken,
-    signOut
+    signOut,
 } = createFirebaseAuthClient(postbaseAuthClient);
 
