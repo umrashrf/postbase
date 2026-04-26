@@ -134,15 +134,17 @@ export function makePostbaseAdminClient({ pool }) {
                 continue;
             }
 
-            // reference compare
-            else if (value && value._type === "ref") {
-                params.push(value.path);
+            else if (isDocumentRef(value)) {
+                params.push(resolveReference(value));
                 where.push(`data->'${field}'->>'path' ${sqlOp} $${i++}`);
                 continue;
             }
 
-            params.push(value);
-            where.push(`data->>'${field}' ${sqlOp} $${i++}`);
+            else {
+                params.push(value);
+                where.push(`data->>'${field}' ${sqlOp} $${i++}`);
+            }
+
         }
 
         return {
@@ -414,7 +416,7 @@ export function makePostbaseAdminClient({ pool }) {
 
     function isDocumentRef(value) {
         if (!value || typeof value !== "object") return false;
-        if (value.collectionName && value.id) return true;
+        if (value.id && value.path && value.collectionName) return true;
         if (value._type === 'ref' && value.path) return true;
         return false;
     }
