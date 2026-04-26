@@ -1,6 +1,6 @@
 //import { createAuthClient } from '../../auth';
 
-export function createFirebaseAuthClient(postbaseAuthClient) {
+export function createFirebaseAuthClient(postbaseAuthClientWithBetterAuthFunctions) {
     // if (!(auth instanceof createAuthClient)) {
     //     throw new Error("");
     // }
@@ -58,7 +58,27 @@ export function createFirebaseAuthClient(postbaseAuthClient) {
         }
     };
 
-    const sendEmailVerification = async () => { };
+    const sendEmailVerification = async (currentUser) => {
+        /** // Must have following function on the server: 
+         *  // https://better-auth.com/docs/concepts/email
+         *  import { betterAuth } from 'better-auth';
+            import { sendEmail } from './email'; // your email sending function
+            export const auth = betterAuth({
+                emailVerification: {
+                    sendVerificationEmail: async ({ user, url, token }, request) => {
+                        void sendEmail({
+                            to: user.email,
+                            subject: 'Verify your email address',
+                            text: `Click the link to verify your email: ${url}`
+                        })
+                    }
+                }
+            })
+        */
+        await postbaseAuthClientWithBetterAuthFunctions.sendVerificationEmail({
+            email: currentUser.email
+        });
+    };
 
     const updateProfile = async () => { };
 
@@ -66,13 +86,14 @@ export function createFirebaseAuthClient(postbaseAuthClient) {
 
     const updatePassword = async () => { };
 
-    const sendPasswordResetEmail = async () => { };
+    const sendPasswordResetEmail = async (auth, email) => {
+        await auth.requestPasswordReset({
+            email,
+        });
 
-    const signOut = async (...args) => {
-        let auth = postbaseAuthClient;
-        if (args && args.length > 0) {
-            auth = args[0];
-        }
+    };
+
+    const signOut = async (auth) => {
         const authToken = window.sessionStorage.getItem('authToken');
         if (authToken) {
             window.sessionStorage.removeItem('authToken');
