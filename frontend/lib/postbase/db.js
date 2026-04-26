@@ -458,7 +458,7 @@ class QueryBuilder {
             out.parent = {
                 collectionName: parentTable,
                 id: parentId,
-                path: `${this.collectionRef.parentPath}/${this.collectionRef.name}`
+                path: `${this.collectionRef.parentPath}`
             };
         }
 
