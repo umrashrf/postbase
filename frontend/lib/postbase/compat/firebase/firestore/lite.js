@@ -56,6 +56,6 @@ export function orderBy(key, dir = 'asc') {
     return this;
 }
 
-export function onSnapshot(docOrQuery, callback) {
+export function onSnapshot(docOrQuery, callback, errorCallback = null) {
     return docOrQuery.onSnapshot(callback);
 }
