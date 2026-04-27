@@ -55,3 +55,7 @@ export function orderBy(key, dir = 'asc') {
     this.orderBy = [key, dir];
     return this;
 }
+
+export function onSnapshot(docOrQuery, callback) {
+    return docOrQuery.onSnapshot(callback);
+}
