@@ -1,8 +1,11 @@
 // tests/rtdb.client.integration.test.js
 import request from 'supertest';
+import { createAuthClient as createBetterAuthClient } from 'better-auth/client';
+import { phoneNumberClient } from "better-auth/client/plugins"
 import { startTestServer } from '../../../../backend/lib/postbase/tests/testServer';
 import { RtdbClient } from '../rtdb';
 import { delay } from '../utils.js';
+import { createAuthClient } from '../auth';
 
 let srv;
 let client;
@@ -10,9 +13,19 @@ let client;
 beforeAll(async () => {
     srv = await startTestServer();
 
+    const betterAuthClient = createBetterAuthClient({
+        baseURL: srv.url + '/auth',
+        plugins: [
+            phoneNumberClient()
+        ]
+    });
+
+    const auth = createAuthClient(betterAuthClient);
+
     client = new RtdbClient({
         restUrl: srv.url,
-        wsUrl: srv.wsUrl
+        wsUrl: srv.wsUrl,
+        getAuthToken: auth.getBetterAuthToken,
     });
 
     await client.connect();
