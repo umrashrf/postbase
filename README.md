@@ -77,9 +77,9 @@ Make a drop-in replacement library for Firebase (keep same naming convention). S
 
 ```javascript
 import { initializeApp } from "../lib/postbase/compat/firebase/app";
-import { getDatabase } from "../lib/postbase/compat/firebase/database";
 import { getFirestore } from "../lib/postbase/compat/firebase/firestore/lite";
 import { getStorage } from "../lib/postbase/compat/firebase/storage";
+import { getDatabase } from "../lib/postbase/compat/firebase/database";
 
 const firebaseConfig = {
     baseUrl: import.meta.env.VITE_API_BASE,
