@@ -1,19 +1,16 @@
-import { getDB } from "../lib/postbase/db";
-import { createClientStorage } from "../lib/postbase/storage";
-import { RtdbClient } from '../lib/postbase/rtdb';
+import { initializeApp } from "../lib/postbase/compat/firebase/app";
+import { getDatabase } from "../lib/postbase/compat/firebase/database";
+import { getFirestore } from "../lib/postbase/compat/firebase/firestore/lite";
+import { getStorage } from "../lib/postbase/compat/firebase/storage";
 import { getBetterAuthToken } from "./auth";
 
-export const db = getDB({
-    baseUrl: import.meta.env.VITE_API_BASE + '/db',
+const firebaseConfig = {
+    baseUrl: import.meta.env.VITE_API_BASE,
     getAuthToken: getBetterAuthToken,
-});
+};
 
-export const storage = createClientStorage({
-    baseUrl: import.meta.env.VITE_API_BASE + '/storage',
-    getAuthToken: getBetterAuthToken,
-});
+const app = initializeApp(firebaseConfig);
 
-export const rtdbClient = new RtdbClient({
-    restUrl: import.meta.env.VITE_API_BASE,
-    wsUrl: import.meta.env.VITE_API_BASE.replace('https://', 'wss://'),
-});
+export const db = getFirestore(app);
+export const storage = getStorage(app);
+export const rtdbClient = getDatabase(app);
