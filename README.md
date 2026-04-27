@@ -138,19 +138,26 @@ Tip: Add this link https://riamu.email to your Sign Up page for your users to ge
 import { db } from "./postbase";
 
 const data = await db.collection('users').doc('docId').get();
+// getDoc(collection(db, 'users'), 'docId')
 
 await db.collection('users').set({ name: "Umair" }, { merge: true });
+// getDoc(collection(db, 'users'), 'docId')
 
 const reference = db.collection('users')
     .where('name', '==', 'Umair')
     .orderBy('createdAt')
     .limit(5);
+// const reference = getDocs(query(collection(db, 'users'), where('name', '==', 'Umair'), orderBy('createdAt')))
 
 const docs = await reference.get();
+// const docs = await getDocs(reference);
 
 reference.onSnapshot(docs => {
     // use docs
 });
+// onSnapshot(reference, docs => {
+// 
+// })
 ```
 
 #### Admin Client
