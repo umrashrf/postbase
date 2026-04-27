@@ -1,4 +1,4 @@
-import { authClient } from '../auth';
+import { betterAuthClient } from '../auth';
 
 export default function Dashboard({ user }) {
     if (!user) {
@@ -15,7 +15,7 @@ export default function Dashboard({ user }) {
             <div className="mt-2">
                 <button className="w-full bg-red-600 text-white py-2 rounded cursor-pointer"
                     onClick={async e => {
-                        await authClient.deleteUser();
+                        await betterAuthClient.deleteUser();
                         location.href = '/';
                     }}>Close Account</button>
             </div>

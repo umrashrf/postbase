@@ -74,26 +74,21 @@ Both backend/ and frontend/ folders have their own README.md
 #### Sign Up
 
 ```javascript
-import { signIn } from './auth';
+import { getAuth, createUserWithEmailAndPassword } from "./auth";
 
-await signUp.email({ 
-    email: 'umrashrf@gmail.com', 
-    password: 'secure-password', 
-    name: 'Umair Ashraf', 
-    callbackURL: "/dashboard",
-});
+const auth = getAuth();
+
+const userCredential = await createUserWithEmailAndPassword(auth, 'email', 'password');
 ```
 
 #### Sign In
 
 ```javascript
-import { signIn } from './auth';
+import { getAuth, signInWithEmailAndPassword } from "./auth";
 
-await signIn.email({ 
-    email: 'umrashrf@gmail.com',
-    password: 'secure-password',
-    callbackURL: '/dashboard',
-});
+const auth = getAuth();
+
+const userCredential = await signInWithEmailAndPassword(auth, 'email', 'password');
 ```
 
 #### auth.onAuthStateChanged, auth.currentUser and auth.currentUser.getIdToken()

@@ -5,7 +5,7 @@ export default function Home({ user }) {
         <main className="text-gray-800">
             {/* HERO */}
             <section className="bg-gradient-to-br from-blue-50 to-white pt-24 pb-32">
-                <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
+                <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10">
                     <div>
                         <h1 className="text-5xl font-extrabold leading-tight text-gray-900">
                             Backend ❤️<br />
@@ -23,28 +23,20 @@ export default function Home({ user }) {
                         </div>
                     </div>
 
-                    <div className="relative">
+                    <div className="flex flex-col gap-2 relative">
                         <div className="bg-gray-900 text-green-400 font-mono text-sm rounded-lg shadow-lg p-6 overflow-x-auto">
                             <code className="block whitespace-pre overflow-x-scroll">{
-                                `import { getSession } from "./auth";
-import { getDB } from "./lib/postbase";
-
-async function getBetterAuthToken() {
-    const { data } = await getSession();
-    if (data && data.hasOwnProperty('session')) {
-        return data.session?.token || null;
-    }
-    return null;
-}
+                                `import { getBetterAuthToken } from "./auth";
+import { getDB } from "../lib/postbase/db";
 
 export const db = getDB({
-    baseUrl: import.meta.env.VITE_API_BASE,
+    baseUrl: import.meta.env.VITE_API_BASE + '/db',
     getAuthToken: getBetterAuthToken,
 });
 
-await db.collection('users').addDoc({ name: "Umair" })
+await db.collection('users').addDoc({ name: "Umair" });
 
-await db.collection('users').where('name', '==', 'Umair')`
+await db.collection('users').where('name', '==', 'Umair');`
                             }</code>
                         </div>
                     </div>
@@ -52,7 +44,7 @@ await db.collection('users').where('name', '==', 'Umair')`
             </section>
 
             <section id="better-auth" className="bg-gradient-to-br from-blue-50 to-white pt-24 pb-32">
-                <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
+                <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10">
                     <div>
                         <h1 className="text-5xl font-extrabold leading-tight text-gray-900">
                             BetterAuth
@@ -69,13 +61,16 @@ await db.collection('users').where('name', '==', 'Umair')`
                         <div className="bg-gray-900 text-green-400 font-mono text-sm rounded-lg shadow-lg p-6 overflow-x-auto">
                             <code className="block whitespace-pre overflow-x-scroll">{
                                 `import { 
-    signUp, signIn, signOut, 
-    getSession,
+    getAuth,
+    signInWithEmailAndPassword,
+    signOut,
 } from "./auth";
 
-await signIn.email({ email: '', password: '', callbackUrl: '/dashboard' });
+const auth = getAuth();
 
-await signOut();`
+const userCredential = await signInWithEmailAndPassword(auth, 'email', 'password');
+
+await signOut(auth);`
                             }</code>
                         </div>
                     </div>
@@ -83,7 +78,7 @@ await signOut();`
             </section>
 
             <section id="familiar-api" className="bg-gradient-to-br from-blue-50 to-white pt-24 pb-32">
-                <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
+                <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10">
                     <div>
                         <h1 className="text-5xl font-extrabold leading-tight text-gray-900">
                             Familiar API
@@ -96,7 +91,7 @@ await signOut();`
                         </div>
                     </div>
 
-                    <div className="relative">
+                    <div className="flex flex-col gap-2 relative">
                         <div className="bg-gray-900 text-green-400 font-mono text-sm rounded-lg shadow-lg p-6 overflow-x-auto">
                             <code className="block whitespace-pre overflow-x-scroll">{
                                 `import { db } from "./postbase";
@@ -107,6 +102,38 @@ await db.collection('users').where('name', '==', 'Umair');
 
 await db.collection('users').doc('docId').get();
 `
+                            }</code>
+                        </div>
+                        <div className="bg-gray-900 text-green-400 font-mono text-sm rounded-lg shadow-lg p-6 overflow-x-auto">
+                            <pre>
+                                <code className="block whitespace-pre overflow-x-scroll">{
+                                    `import { getBetterAuthToken } from "./auth";
+import { createClientStorage } from "../lib/postbase/storage";
+
+export const storage = createClientStorage({
+    baseUrl: import.meta.env.VITE_API_BASE + '/storage',
+    getAuthToken: getBetterAuthToken,
+});
+
+const profilePicFile = new File(...); // HTMLFileInput
+
+const fileRef = storage.ref('path/to/directory/' + profilePicFile.name);
+
+const remoteFile = await fileRef.put(profilePicFile);
+
+const profileUrl = await remoteFile.ref.getDownloadURL();`
+                                }</code>
+                            </pre>
+                        </div>
+                        <div className="bg-gray-900 text-green-400 font-mono text-sm rounded-lg shadow-lg p-6 overflow-x-auto">
+                            <code className="block whitespace-pre overflow-x-scroll">{
+                                `import { getBetterAuthToken } from "./auth";
+import { RtdbClient } from '../lib/postbase/rtdb';
+
+export const rtdbClient = new RtdbClient({
+    restUrl: import.meta.env.VITE_API_BASE,
+    wsUrl: import.meta.env.VITE_API_BASE.replace('https://', 'wss://'),
+});`
                             }</code>
                         </div>
                     </div>
