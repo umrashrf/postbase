@@ -69,6 +69,25 @@ Both backend/ and frontend/ folders have their own README.md
 
 ## Docs
 
+### Getting Started
+
+```javascript
+import { initializeApp } from "../lib/postbase/compat/firebase/app";
+import { getDatabase } from "../lib/postbase/compat/firebase/database";
+import { getFirestore } from "../lib/postbase/compat/firebase/firestore/lite";
+import { getStorage } from "../lib/postbase/compat/firebase/storage";
+
+const firebaseConfig = {
+    baseUrl: import.meta.env.VITE_API_BASE,
+};
+
+const app = initializeApp(firebaseConfig);
+
+export const db = getFirestore(app);
+export const storage = getStorage(app);
+export const rtdbClient = getDatabase(app);
+```
+
 ### Authentication (Firebase Like API)
 
 #### Sign Up
