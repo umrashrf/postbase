@@ -1,3 +1,4 @@
+import { getBetterAuthToken } from "../../../../src/auth";
 import { RtdbClient } from "../../rtdb";
 
 export function getDatabase(app) {
@@ -5,5 +6,6 @@ export function getDatabase(app) {
     return new RtdbClient({
         restUrl: app.baseUrl,
         wsUrl: app.baseUrl.replace('https://', 'wss://'),
+        getAuthToken: getBetterAuthToken,
     });
 }

@@ -1,10 +1,11 @@
+import { getBetterAuthToken } from "../../../../../src/auth";
 import { getDB } from "../../../db";
 
 export function getFirestore(app) {
     // app is just {} having baseUrl and getAuthToken
     return getDB({
         baseUrl: app.baseUrl + '/db',
-        getAuthToken: app.getAuthToken,
+        getAuthToken: getBetterAuthToken,
     });
 }
 

@@ -1,10 +1,11 @@
 // frontend/lib/postbase/rtdbClient.js
 export class RtdbClient {
-    constructor({ restUrl, wsUrl }) {
+    constructor({ restUrl, wsUrl, getAuthToken }) {
         this.restUrl = restUrl.replace(/\/+$/, '');
         this.wsUrl = wsUrl;
         this.ws = null;
         this.listeners = new Map();
+        this.getAuthToken = getAuthToken; // TODO: use this
     }
 
     async connect() {
