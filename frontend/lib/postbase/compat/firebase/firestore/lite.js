@@ -13,8 +13,9 @@ export function collection(db, collectionName) {
     return db.collection(collectionName);
 }
 
-export async function getDocs(coll) {
-    return await coll.get();
+export async function getDocs(collOrQuery) {
+    // collOrQuery both have get() method
+    return await collOrQuery.get();
 }
 
 export function doc(coll, id) {
@@ -23,4 +24,20 @@ export function doc(coll, id) {
 
 export async function getDoc(coll, id) {
     return await doc(id).get();
+}
+
+export async function addDoc(coll, data) {
+    return await coll.add(data);
+}
+
+export async function setDoc(doc, data) {
+    return await doc.set(data, { merge: true });
+}
+
+export function query(coll, where) {
+    return coll.where(...where);
+}
+
+export function where(key, op, value) {
+    return [key, op, value];
 }
