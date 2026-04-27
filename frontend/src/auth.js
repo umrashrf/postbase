@@ -26,7 +26,7 @@ export const {
 } = betterAuthClient;
 
 // firebase auth
-export const getAuth = postbaseAuthClient;
+export const getAuth = () => postbaseAuthClient;
 export const {
     createUserWithEmailAndPassword,
     sendEmailVerification,
