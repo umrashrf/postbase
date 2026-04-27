@@ -34,10 +34,24 @@ export async function setDoc(doc, data) {
     return await doc.set(data, { merge: true });
 }
 
-export function query(coll, where) {
-    return coll.where(...where);
+export function query(coll, ...filters) {
+    let q = coll;
+    for (let f of filters) {
+        if (f.name === 'where') {
+            q = q.where(...f.filter);
+        } else if (f.name === 'orderBy') {
+            q = q.orderBy(...f.orderBy)
+        }
+    }
+    return q;
 }
 
 export function where(key, op, value) {
-    return [key, op, value];
+    this.filter = [key, op, value];
+    return this;
+}
+
+export function orderBy(key, dir = 'asc') {
+    this.orderBy = [key, dir];
+    return this;
 }
