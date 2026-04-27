@@ -69,7 +69,7 @@ Both backend/ and frontend/ folders have their own README.md
 
 ## Vision
 
-Make a drop-in replacement library for Firebase (keep same naming convention)
+Make a drop-in replacement library for Firebase (keep same naming convention). So users can switch between Firebase and Postbase as they please.
 
 ## Docs
 
