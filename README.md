@@ -67,6 +67,10 @@ then start backend and frontend servers and modify as needed!
 
 Both backend/ and frontend/ folders have their own README.md
 
+## Vision
+
+Make a drop-in replacement library for Firebase (keep same naming convention)
+
 ## Docs
 
 ### Getting Started
