@@ -27,6 +27,8 @@ export const {
 
 // firebase auth
 export const getAuth = () => postbaseAuthClient;
+export const { getBetterAuthToken } = postbaseAuthClient;
+
 export const {
     createUserWithEmailAndPassword,
     sendEmailVerification,
@@ -36,7 +38,5 @@ export const {
     updateEmail,
     updatePassword,
     onAuthStateChanged,
-    getBetterAuthToken,
     signOut,
 } = createFirebaseAuthClient(postbaseAuthClient);
-
