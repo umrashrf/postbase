@@ -16,3 +16,11 @@ export function collection(db, collectionName) {
 export async function getDocs(coll) {
     return await coll.get();
 }
+
+export function doc(coll, id) {
+    return coll.doc(id);
+}
+
+export async function getDoc(coll, id) {
+    return await doc(id).get();
+}
