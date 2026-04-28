@@ -16,7 +16,7 @@ export const postbaseAuthClient = createAuthClient(betterAuthClient);
 export const {
     signUp,
     signIn,
-    signOut: logOut, // rename to logOut because firebase has reserved signOut
+    signOut: _signOut,
     getSession,
     sendVerificationEmail,
     requestPasswordReset,
@@ -24,6 +24,16 @@ export const {
     phoneNumber,
     deleteUser,
 } = betterAuthClient;
+
+// rename to logOut because firebase has reserved signOut
+export const logout = async (...args) => {
+    const authToken = window.sessionStorage.getItem('authToken');
+    if (authToken) {
+        window.sessionStorage.removeItem('authToken');
+    }
+    // at the end because it can trigger navigation
+    await _signOut(...args);
+};
 
 // firebase auth
 export const getAuth = () => postbaseAuthClient;
