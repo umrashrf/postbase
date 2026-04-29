@@ -45,8 +45,9 @@ jobs:
       # backend/lib/postbase
       # -------------------------------------------------------
       - name: "[backend] Install dependencies"
-        working-directory: ./backend/lib/postbase
-        run: npm ci
+        run: |
+          cd ./backend/lib/postbase
+          npm ci
 
       - name: "[backend] Create test database"
         run: psql -h localhost -U testuser -d postgres -c "CREATE DATABASE backend_testdb;"
@@ -54,15 +55,17 @@ jobs:
           PGPASSWORD: testpassword
 
       - name: "[backend] Run migrations"
-        working-directory: ./backend/lib/postbase
-        run: npx node-pg-migrate up
+        run: |
+          cd ./backend/lib/postbase
+          npx node-pg-migrate up
         env:
           DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/backend_testdb 
           TEST_DB_URL: postgresql://testuser:testpassword@localhost:5432/backend_testdb
 
       - name: "[backend] Run Jest tests"
-        working-directory: ./backend/lib/postbase
-        run: npm test
+        run: |
+          cd ./backend/lib/postbase
+          npm test
         env:
           NODE_ENV: test
           DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/backend_testdb
@@ -79,8 +82,9 @@ jobs:
       # frontend/lib/postbase
       # -------------------------------------------------------
       - name: "[frontend] Install dependencies"
-        working-directory: ./frontend/lib/postbase
-        run: npm ci
+        run: |
+          cd ./frontend/lib/postbase
+          npm ci
 
       - name: "[frontend] Create test database"
         run: psql -h localhost -U testuser -d postgres -c "CREATE DATABASE frontend_testdb;"
@@ -88,15 +92,17 @@ jobs:
           PGPASSWORD: testpassword
 
       - name: "[frontend] Run migrations"
-        working-directory: ./frontend/lib/postbase
-        run: npx node-pg-migrate up
+        run: |
+          cd ./frontend/lib/postbase
+          npx node-pg-migrate up
         env:
           DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/frontend_testdb
           TEST_DB_URL: postgresql://testuser:testpassword@localhost:5432/frontend_testdb
 
       - name: "[frontend] Run Jest tests"
-        working-directory: ./frontend/lib/postbase
-        run: npm test
+        run: |
+          cd ./frontend/lib/postbase
+          npm test
         env:
           NODE_ENV: test
           DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/frontend_testdb
