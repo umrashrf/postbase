@@ -4,6 +4,7 @@
     "license": "MIT",
     "author": "Umair Ashraf",
     "url": "http://github.com/umrashrf/postbase",
+    "type": "module",
     "scripts": {
         "dev": "nodemon local.js",
         "migrate:up": "node-pg-migrate up",
