@@ -55,7 +55,7 @@ jobs:
         run: npm ci
 
       - name: "[backend] Create test database"
-        run: psql -h localhost -U testuser -c "CREATE DATABASE backend_testdb;"
+        run: psql -h localhost -U testuser -d postgres -c "CREATE DATABASE backend_testdb;"
         env:
           PGPASSWORD: testpassword
 
@@ -87,7 +87,7 @@ jobs:
         run: npm ci
 
       - name: "[frontend] Create test database"
-        run: psql -h localhost -U testuser -c "CREATE DATABASE frontend_testdb;"
+        run: psql -h localhost -U testuser -d postgres -c "CREATE DATABASE frontend_testdb;"
         env:
           PGPASSWORD: testpassword
 
