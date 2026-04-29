@@ -10,6 +10,9 @@ on:
       - main
       - develop
 
+env:
+  NODE_OPTIONS: --experimental-vm-modules
+
 jobs:
   test:
     name: Run Jest Supertest Tests
