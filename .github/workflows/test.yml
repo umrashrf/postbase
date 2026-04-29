@@ -15,7 +15,6 @@ env:
   PGPORT: 5432
   PGUSER: testuser
   PGPASSWORD: testpassword
-  NODE_VERSION: 20.x
 
 jobs:
   test:
@@ -39,12 +38,14 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        run: |
+          git clone "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" .
+          git checkout ${{ github.sha }}
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
+        run: |
+          curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
+          sudo apt-get install -y nodejs
 
       # -------------------------------------------------------
       # backend/lib/postbase
@@ -72,12 +73,11 @@ jobs:
           TEST_DB_URL: postgresql://testuser:testpassword@localhost:5432/backend_testdb
           PGDATABASE: backend_testdb
 
-      - name: "[backend] Upload coverage report"
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-backend
-          path: backend/lib/postbase/coverage/
-          retention-days: 7
+      - name: "[backend] Save coverage report"
+        run: |
+          mkdir -p /tmp/coverage-backend
+          cp -r backend/lib/postbase/coverage/. /tmp/coverage-backend/
+          echo "Coverage saved to runner at /tmp/coverage-backend"
 
       # -------------------------------------------------------
       # frontend/lib/postbase
@@ -105,9 +105,8 @@ jobs:
           TEST_DB_URL: postgresql://testuser:testpassword@localhost:5432/frontend_testdb
           PGDATABASE: frontend_testdb
 
-      - name: "[frontend] Upload coverage report"
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-frontend
-          path: frontend/lib/postbase/coverage/
-          retention-days: 7
+      - name: "[frontend] Save coverage report"
+        run: |
+          mkdir -p /tmp/coverage-frontend
+          cp -r frontend/lib/postbase/coverage/. /tmp/coverage-frontend/
+          echo "Coverage saved to runner at /tmp/coverage-frontend"
