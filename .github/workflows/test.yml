@@ -45,7 +45,7 @@ jobs:
       # backend/lib/postbase
       # -------------------------------------------------------
       - name: "[backend] Install dependencies"
-        run: ./backend/lib/postbase && npm ci
+        run: cd ./backend/lib/postbase && npm ci
 
       - name: "[backend] Create test database"
         run: psql -h localhost -U testuser -d postgres -c "CREATE DATABASE backend_testdb;"
