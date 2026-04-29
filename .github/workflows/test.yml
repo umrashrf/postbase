@@ -57,6 +57,7 @@ jobs:
         working-directory: backend/lib/postbase
         run: npx node-pg-migrate up
         env:
+          DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/backend_testdb 
           TEST_DB_URL: postgresql://testuser:testpassword@localhost:5432/backend_testdb
 
       - name: "[backend] Run Jest tests"
@@ -64,6 +65,7 @@ jobs:
         run: npm test
         env:
           NODE_ENV: test
+          DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/backend_testdb
           TEST_DB_URL: postgresql://testuser:testpassword@localhost:5432/backend_testdb
           PGDATABASE: backend_testdb
 
@@ -89,6 +91,7 @@ jobs:
         working-directory: frontend/lib/postbase
         run: npx node-pg-migrate up
         env:
+          DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/frontend_testdb
           TEST_DB_URL: postgresql://testuser:testpassword@localhost:5432/frontend_testdb
 
       - name: "[frontend] Run Jest tests"
@@ -96,6 +99,7 @@ jobs:
         run: npm test
         env:
           NODE_ENV: test
+          DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/frontend_testdb
           TEST_DB_URL: postgresql://testuser:testpassword@localhost:5432/frontend_testdb
           PGDATABASE: frontend_testdb
 
