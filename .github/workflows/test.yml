@@ -43,8 +43,7 @@ jobs:
       # backend/lib/postbase
       # -------------------------------------------------------
       - name: "[backend] Install dependencies"
-        working-directory: ./backend/lib/postbase
-        run: npm ci
+        run: cd backend/lib/postbase && npm ci
         env:
           NODE_OPTIONS: --experimental-vm-modules
 
@@ -54,15 +53,13 @@ jobs:
           PGPASSWORD: testpassword
 
       - name: "[backend] Run migrations"
-        working-directory: ./backend/lib/postbase
-        run: npx node-pg-migrate up
+        run: backend/lib/postbase && npx node-pg-migrate up
         env:
           DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/postbase_testdb 
           TEST_DB_URL: postgresql://testuser:testpassword@localhost:5432/postbase_testdb
 
       - name: "[backend] Run Jest tests"
-        working-directory: ./backend/lib/postbase
-        run: npm test -- --coverage
+        run: backend/lib/postbase && npm test -- --coverage
         env:
           NODE_ENV: test
           NODE_OPTIONS: --experimental-vm-modules
@@ -80,14 +77,12 @@ jobs:
       # frontend/lib/postbase
       # -------------------------------------------------------
       - name: "[frontend] Install dependencies"
-        working-directory: ./frontend/lib/postbase
-        run: npm ci
+        run: cd frontend/lib/postbase && npm ci
         env:
           NODE_OPTIONS: --experimental-vm-modules
 
       - name: "[frontend] Run Jest tests"
-        working-directory: ./frontend/lib/postbase
-        run: npm test -- --coverage
+        run: cd frontend/lib/postbase && npm test -- --coverage
         env:
           NODE_ENV: test
           NODE_OPTIONS: --experimental-vm-modules
