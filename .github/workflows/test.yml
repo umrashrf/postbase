@@ -62,7 +62,7 @@ jobs:
 
       - name: "[backend] Run Jest tests"
         working-directory: ./backend/lib/postbase
-        run: npm test
+        run: npm test -- --coverage
         env:
           NODE_ENV: test
           NODE_OPTIONS: --experimental-vm-modules
@@ -99,7 +99,7 @@ jobs:
 
       - name: "[frontend] Run Jest tests"
         working-directory: ./frontend/lib/postbase
-        run: npm test
+        run: npm test -- --coverage
         env:
           NODE_ENV: test
           NODE_OPTIONS: --experimental-vm-modules
