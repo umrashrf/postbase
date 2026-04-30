@@ -53,13 +53,13 @@ jobs:
           PGPASSWORD: testpassword
 
       - name: "[backend] Run migrations"
-        run: backend/lib/postbase && npx node-pg-migrate up
+        run: cd backend/lib/postbase && npx node-pg-migrate up
         env:
           DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/postbase_testdb 
           TEST_DB_URL: postgresql://testuser:testpassword@localhost:5432/postbase_testdb
 
       - name: "[backend] Run Jest tests"
-        run: backend/lib/postbase && npm test -- --coverage
+        run: cd backend/lib/postbase && npm test -- --coverage
         env:
           NODE_ENV: test
           NODE_OPTIONS: --experimental-vm-modules
