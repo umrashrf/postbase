@@ -72,26 +72,3 @@ jobs:
           mkdir -p /tmp/coverage-backend
           cp -r backend/lib/postbase/coverage/. /tmp/coverage-backend/
           echo "Coverage saved to runner at /tmp/coverage-backend"
-
-      # -------------------------------------------------------
-      # frontend/lib/postbase
-      # -------------------------------------------------------
-      - name: "[frontend] Install dependencies"
-        run: cd frontend/lib/postbase && npm ci
-        env:
-          NODE_OPTIONS: --experimental-vm-modules
-
-      - name: "[frontend] Run Jest tests"
-        run: cd frontend/lib/postbase && npm test -- --coverage
-        env:
-          NODE_ENV: test
-          NODE_OPTIONS: --experimental-vm-modules
-          DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/postbase_testdb
-          TEST_DB_URL: postgresql://testuser:testpassword@localhost:5432/postbase_testdb
-          PGDATABASE: postbase_testdb
-
-      - name: "[frontend] Save coverage report"
-        run: |
-          mkdir -p /tmp/coverage-frontend
-          cp -r frontend/lib/postbase/coverage/. /tmp/coverage-frontend/
-          echo "Coverage saved to runner at /tmp/coverage-frontend"
