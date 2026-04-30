@@ -6,7 +6,7 @@
 
 # Postbase
 
-Open Source, localhost supported, Drop-in Replacement and Self-Hosted Alternative for Firebase using Node.js, Express.js, BetterAuth and PostgreSQL (JSONB), node-pg-migrate
+Drop-in replacement for Firebase, production grade, open source, localhost first and self-hosted using Node.js, Express.js, BetterAuth and PostgreSQL (JSONB)
 
 Firebase 💔 | Supabase 💔 | Postbase ❤️
 
