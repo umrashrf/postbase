@@ -10,9 +10,6 @@ on:
       - main
       - develop
 
-env:
-  NODE_OPTIONS: --experimental-vm-modules
-
 jobs:
   test:
     name: Run Jest Supertest Tests
@@ -50,6 +47,8 @@ jobs:
       - name: "[backend] Install dependencies"
         working-directory: ./backend/lib/postbase
         run: npm ci
+        env:
+          NODE_OPTIONS: --experimental-vm-modules
 
       - name: "[backend] Create test database"
         run: psql -h localhost -U testuser -d postgres -c "CREATE DATABASE backend_testdb;"
@@ -68,6 +67,7 @@ jobs:
         run: npm test
         env:
           NODE_ENV: test
+          NODE_OPTIONS: --experimental-vm-modules
           DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/backend_testdb
           TEST_DB_URL: postgresql://testuser:testpassword@localhost:5432/backend_testdb
           PGDATABASE: backend_testdb
@@ -84,6 +84,8 @@ jobs:
       - name: "[frontend] Install dependencies"
         working-directory: ./frontend/lib/postbase
         run: npm ci
+        env:
+          NODE_OPTIONS: --experimental-vm-modules
 
       - name: "[frontend] Create test database"
         run: psql -h localhost -U testuser -d postgres -c "CREATE DATABASE frontend_testdb;"
@@ -102,6 +104,7 @@ jobs:
         run: npm test
         env:
           NODE_ENV: test
+          NODE_OPTIONS: --experimental-vm-modules
           DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/frontend_testdb
           TEST_DB_URL: postgresql://testuser:testpassword@localhost:5432/frontend_testdb
           PGDATABASE: frontend_testdb
