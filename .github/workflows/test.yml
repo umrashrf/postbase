@@ -49,7 +49,7 @@ jobs:
           NODE_OPTIONS: --experimental-vm-modules
 
       - name: "[backend] Create test database"
-        run: psql -h localhost -U testuser -d postgres -c "CREATE DATABASE backend_testdb;"
+        run: psql -h localhost -U testuser -d postgres -c "CREATE DATABASE postbase_testdb;"
         env:
           PGPASSWORD: testpassword
 
@@ -57,8 +57,8 @@ jobs:
         working-directory: ./backend/lib/postbase
         run: npx node-pg-migrate up
         env:
-          DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/backend_testdb 
-          TEST_DB_URL: postgresql://testuser:testpassword@localhost:5432/backend_testdb
+          DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/postbase_testdb 
+          TEST_DB_URL: postgresql://testuser:testpassword@localhost:5432/postbase_testdb
 
       - name: "[backend] Run Jest tests"
         working-directory: ./backend/lib/postbase
@@ -66,9 +66,9 @@ jobs:
         env:
           NODE_ENV: test
           NODE_OPTIONS: --experimental-vm-modules
-          DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/backend_testdb
-          TEST_DB_URL: postgresql://testuser:testpassword@localhost:5432/backend_testdb
-          PGDATABASE: backend_testdb
+          DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/postbase_testdb
+          TEST_DB_URL: postgresql://testuser:testpassword@localhost:5432/postbase_testdb
+          PGDATABASE: postbase_testdb
 
       - name: "[backend] Save coverage report"
         run: |
@@ -85,27 +85,15 @@ jobs:
         env:
           NODE_OPTIONS: --experimental-vm-modules
 
-      - name: "[frontend] Create test database"
-        run: psql -h localhost -U testuser -d postgres -c "CREATE DATABASE frontend_testdb;"
-        env:
-          PGPASSWORD: testpassword
-
-      - name: "[frontend] Run migrations"
-        working-directory: ./frontend/lib/postbase
-        run: npx node-pg-migrate up
-        env:
-          DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/frontend_testdb
-          TEST_DB_URL: postgresql://testuser:testpassword@localhost:5432/frontend_testdb
-
       - name: "[frontend] Run Jest tests"
         working-directory: ./frontend/lib/postbase
         run: npm test -- --coverage
         env:
           NODE_ENV: test
           NODE_OPTIONS: --experimental-vm-modules
-          DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/frontend_testdb
-          TEST_DB_URL: postgresql://testuser:testpassword@localhost:5432/frontend_testdb
-          PGDATABASE: frontend_testdb
+          DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/postbase_testdb
+          TEST_DB_URL: postgresql://testuser:testpassword@localhost:5432/postbase_testdb
+          PGDATABASE: postbase_testdb
 
       - name: "[frontend] Save coverage report"
         run: |
