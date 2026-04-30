@@ -39,11 +39,6 @@ jobs:
           git clone "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" .
           git checkout ${{ github.sha }}
 
-      - name: Set up Node.js
-        run: |
-          curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
-          sudo apt-get install -y nodejs
-
       # -------------------------------------------------------
       # backend/lib/postbase
       # -------------------------------------------------------
