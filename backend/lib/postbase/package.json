@@ -10,7 +10,7 @@
         "test": "jest"
     },
     "devDependencies": {
-        "express": "^5.2.1",
+        "express": "^4.21.2",
         "jest": "^30.2.0",
         "node-pg-migrate": "^8.0.3",
         "supertest": "^7.1.4",
