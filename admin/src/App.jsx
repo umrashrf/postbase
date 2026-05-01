@@ -5,6 +5,9 @@ import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import { getSession } from './auth';
+import Users from './pages/authentication/Users';
+import Database from './pages/firestore/Database';
+import Files from './pages/storage/files';
 
 export default function App() {
     const [user, setUser] = useState(null);
@@ -28,6 +31,9 @@ export default function App() {
                         <Home path="/" user={user} />
                         <Dashboard path="/dashboard" user={user} />
                         <Login path="/login" user={user} />
+                        <Users path="/project/0/authentication/users" user={user} />
+                        <Database path="/project/0/firestore/databases/-default-/data" user={user} />
+                        <Files path="/project/0/storage" user={user} />
                     </Router>
 
                     <footer className="bg-[#131312] text-white py-6">
