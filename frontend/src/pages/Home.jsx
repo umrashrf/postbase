@@ -26,17 +26,20 @@ export default function Home({ user }) {
                     <div className="flex flex-col gap-2 relative">
                         <div className="bg-gray-900 text-green-400 font-mono text-sm rounded-lg shadow-lg p-6 overflow-x-auto">
                             <code className="block whitespace-pre overflow-x-scroll">{
-                                `import { getBetterAuthToken } from "./auth";
-import { getDB } from "../lib/postbase/db";
+                                `import { initializeApp } from "../lib/postbase/compat/firebase/app";
+import { getFirestore } from "../lib/postbase/compat/firebase/firestore/lite";
+import { getStorage } from "../lib/postbase/compat/firebase/storage";
+import { getDatabase } from "../lib/postbase/compat/firebase/database";
 
-export const db = getDB({
-    baseUrl: import.meta.env.VITE_API_BASE + '/db',
-    getAuthToken: getBetterAuthToken,
-});
+const firebaseConfig = {
+    baseUrl: import.meta.env.VITE_API_BASE,
+};
 
-await db.collection('users').addDoc({ name: "Umair" });
+const app = initializeApp(firebaseConfig);
 
-await db.collection('users').where('name', '==', 'Umair');`
+export const db = getFirestore(app);
+export const storage = getStorage(app);
+export const rtdbClient = getDatabase(app);`
                             }</code>
                         </div>
                     </div>
@@ -107,13 +110,7 @@ await db.collection('users').doc('docId').get();
                         <div className="bg-gray-900 text-green-400 font-mono text-sm rounded-lg shadow-lg p-6 overflow-x-auto">
                             <pre>
                                 <code className="block whitespace-pre overflow-x-scroll">{
-                                    `import { getBetterAuthToken } from "./auth";
-import { createClientStorage } from "../lib/postbase/storage";
-
-export const storage = createClientStorage({
-    baseUrl: import.meta.env.VITE_API_BASE + '/storage',
-    getAuthToken: getBetterAuthToken,
-});
+                                    `import { storage } from "./postbase";
 
 const profilePicFile = new File(...); // HTMLFileInput
 
@@ -127,13 +124,10 @@ const profileUrl = await remoteFile.ref.getDownloadURL();`
                         </div>
                         <div className="bg-gray-900 text-green-400 font-mono text-sm rounded-lg shadow-lg p-6 overflow-x-auto">
                             <code className="block whitespace-pre overflow-x-scroll">{
-                                `import { getBetterAuthToken } from "./auth";
-import { RtdbClient } from '../lib/postbase/rtdb';
+                                `import { rtdbClient } from '../postbase';
 
-export const rtdbClient = new RtdbClient({
-    restUrl: import.meta.env.VITE_API_BASE,
-    wsUrl: import.meta.env.VITE_API_BASE.replace('https://', 'wss://'),
-});`
+// please check frontend/lib/postbase/tests/rtdb.client.test.js
+`
                             }</code>
                         </div>
                     </div>
