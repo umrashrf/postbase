@@ -1,5 +1,7 @@
 # Admin Panel
 
+![Admin Panel Demo Screenshot](assets/img/admin-ui.png)
+
 ## Install
 
 ```
