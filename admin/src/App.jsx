@@ -19,7 +19,7 @@ export default function App() {
     }, []);
 
     return (
-        <div className="">
+        <div className="bg-[#131312] text-white">
             <div class="flex">
                 <Header user={user} />
 
@@ -30,8 +30,8 @@ export default function App() {
                         <Login path="/login" user={user} />
                     </Router>
 
-                    <footer className="bg-white border-t py-6 mt-10">
-                        <div className="container mx-auto text-center text-sm text-gray-500">
+                    <footer className="bg-[#131312] text-white py-6">
+                        <div className="container mx-auto text-center text-sm">
                             © {new Date().getFullYear()} Postbase Demo
                         </div>
                     </footer>
