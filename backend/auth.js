@@ -1,4 +1,5 @@
 import { betterAuth } from "better-auth";
+import { admin } from "better-auth/plugins"
 import { createPool } from "./lib/postbase/db.js";
 //import { phoneNumber } from "better-auth/plugins"
 //import { makePostbaseAdminClient } from "./lib/postbase/adminClient.js";
@@ -74,6 +75,7 @@ export const auth = betterAuth({
         }
     },
     plugins: [
+        admin(),
         // phoneNumber({
         //     sendOTP: ({ phoneNumber, code }, request) => {
         //         // Implement sending OTP code via SMS
