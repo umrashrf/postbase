@@ -1,19 +1,21 @@
 import { useEffect, useState } from "preact/hooks";
 import { authClient } from "../../auth";
+import { formatDateTime } from "../../common/formatDateTime";
 
 export default function Users({ user }) {
-    const [users, setUsers] = useState();
+    const [users, setUsers] = useState(null);
 
     useEffect(() => {
         (async () => {
-            const { data: users, error } = await authClient.admin.listUsers({
+            const { data, error } = await authClient.admin.listUsers({
                 query: {
                     limit: 100,
-                    offset: 100,
+                    offset: 0,
                     //sortBy: "name",
                     //sortDirection: "desc",
                 },
             });
+            setUsers(data.users);
         })();
     }, []);
 
@@ -80,156 +82,65 @@ export default function Users({ user }) {
                                 <th scope="col" class="p-4">
                                     <div class="flex items-center">
                                         <input id="table-checkbox-51" type="checkbox" value="" class="w-4 h-4 border border-default-medium rounded-xs bg-neutral-secondary-medium focus:ring-2 focus:ring-brand-soft" />
-                                            <label for="table-checkbox-51" class="sr-only">Table checkbox</label>
+                                        <label for="table-checkbox-51" class="sr-only">Table checkbox</label>
                                     </div>
                                 </th>
                                 <th scope="col" class="px-6 py-3 font-medium">
                                     Name
                                 </th>
                                 <th scope="col" class="px-6 py-3 font-medium">
-                                    Position
+                                    Providers
                                 </th>
                                 <th scope="col" class="px-6 py-3 font-medium">
-                                    Status
+                                    Created
                                 </th>
                                 <th scope="col" class="px-6 py-3 font-medium">
-                                    Action
+                                    Signed In
+                                </th>
+                                <th scope="col" class="px-6 py-3 font-medium">
+                                    User UID
+                                </th>
+                                <th scope="col" class="px-6 py-3 font-medium">
                                 </th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr class="bg-neutral-primary-soft border-b border-default hover:bg-neutral-secondary-medium">
+                            {users.map(u => <tr class="bg-neutral-primary-soft border-b border-default hover:bg-neutral-secondary-medium">
                                 <td class="w-4 p-4">
                                     <div class="flex items-center">
                                         <input id="table-checkbox-52" type="checkbox" value="" class="w-4 h-4 border border-default-medium rounded-xs bg-neutral-secondary-medium focus:ring-2 focus:ring-brand-soft" />
-                                            <label for="table-checkbox-52" class="sr-only">Table checkbox</label>
+                                        <label for="table-checkbox-52" class="sr-only">Table checkbox</label>
                                     </div>
                                 </td>
-                                <th scope="row" class="flex items-center px-6 py-4 text-heading whitespace-nowrap">
-                                    <img class="w-10 h-10 rounded-full" src="/docs/images/people/profile-picture-1.jpg" alt="Jese image" />
-                                        <div class="ps-3">
-                                            <div class="text-base font-semibold">Neil Sims</div>
-                                            <div class="font-normal text-body">neil.sims@flowbite.com</div>
-                                        </div>
-                                </th>
+                                <td scope="row" class="flex items-center px-6 py-4 text-heading whitespace-nowrap">
+                                    <img class="w-10 h-10 rounded-full" src={u.image} alt="Jese image" />
+                                    <div class="ps-3">
+                                        <div class="text-base font-semibold">{u.name}</div>
+                                        <div class="font-normal text-body">{u.email}</div>
+                                    </div>
+                                </td>
                                 <td class="px-6 py-4">
-                                    React Developer
+                                    {u.image.includes('googleusercontent.com') ? 'Google' : 'Email'}
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center">
-                                        <div class="h-2.5 w-2.5 rounded-full bg-success me-2"></div> Online
+                                        <div class="h-2.5 w-2.5 rounded-full bg-success me-2"></div> {formatDateTime(u.createdAt)}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center">
+                                        <div class="h-2.5 w-2.5 rounded-full bg-success me-2"></div> {formatDateTime(u.updatedAt)}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center">
+                                        <div class="h-2.5 w-2.5 rounded-full bg-success me-2"></div> {u.id}
                                     </div>
                                 </td>
                                 <td class="px-6 py-4">
                                     <a href="#" type="button" data-modal-target="editUserModal" data-modal-show="editUserModal" class="font-medium text-fg-brand hover:underline">Edit user</a>
                                 </td>
-                            </tr>
-                            <tr class="bg-neutral-primary-soft border-b border-default hover:bg-neutral-secondary-medium">
-                                <td class="w-4 p-4">
-                                    <div class="flex items-center">
-                                        <input id="table-checkbox-53" type="checkbox" value="" class="w-4 h-4 border border-default-medium rounded-xs bg-neutral-secondary-medium focus:ring-2 focus:ring-brand-soft" />
-                                            <label for="table-checkbox-53" class="sr-only">Table checkbox</label>
-                                    </div>
-                                </td>
-                                <th scope="row" class="flex items-center px-6 py-4 font-medium text-heading whitespace-nowrap">
-                                    <img class="w-10 h-10 rounded-full" src="/docs/images/people/profile-picture-3.jpg" alt="Jese image" />
-                                        <div class="ps-3">
-                                            <div class="text-base font-semibold">Bonnie Green</div>
-                                            <div class="font-normal text-body">bonnie@flowbite.com</div>
-                                        </div>
-                                </th>
-                                <td class="px-6 py-4">
-                                    Designer
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center">
-                                        <div class="h-2.5 w-2.5 rounded-full bg-success me-2"></div> Online
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <a href="#" type="button" data-modal-show="editUserModal" class="font-medium text-fg-brand hover:underline">Edit user</a>
-                                </td>
-                            </tr>
-                            <tr class="bg-neutral-primary-soft border-b border-default hover:bg-neutral-secondary-medium">
-                                <td class="w-4 p-4">
-                                    <div class="flex items-center">
-                                        <input id="table-checkbox-54" type="checkbox" value="" class="w-4 h-4 border border-default-medium rounded-xs bg-neutral-secondary-medium focus:ring-2 focus:ring-brand-soft" />
-                                            <label for="table-checkbox-54" class="sr-only">Table checkbox</label>
-                                    </div>
-                                </td>
-                                <th scope="row" class="flex items-center px-6 py-4 font-medium text-heading whitespace-nowrap">
-                                    <img class="w-10 h-10 rounded-full" src="/docs/images/people/profile-picture-2.jpg" alt="Jese image" />
-                                        <div class="ps-3">
-                                            <div class="text-base font-semibold">Jese Leos</div>
-                                            <div class="font-normal text-body">jese@flowbite.com</div>
-                                        </div>
-                                </th>
-                                <td class="px-6 py-4">
-                                    Vue JS Developer
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center">
-                                        <div class="h-2.5 w-2.5 rounded-full bg-success me-2"></div> Online
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <a href="#" type="button" data-modal-show="editUserModal" class="font-medium text-fg-brand hover:underline">Edit user</a>
-                                </td>
-                            </tr>
-                            <tr class="bg-neutral-primary-soft border-b border-default hover:bg-neutral-secondary-medium">
-                                <td class="w-4 p-4">
-                                    <div class="flex items-center">
-                                        <input id="table-checkbox-55" type="checkbox" value="" class="w-4 h-4 border border-default-medium rounded-xs bg-neutral-secondary-medium focus:ring-2 focus:ring-brand-soft" />
-                                            <label for="table-checkbox-55" class="sr-only">Table checkbox</label>
-                                    </div>
-                                </td>
-                                <th scope="row" class="flex items-center px-6 py-4 font-medium text-heading whitespace-nowrap">
-                                    <img class="w-10 h-10 rounded-full" src="/docs/images/people/profile-picture-5.jpg" alt="Jese image" />
-                                        <div class="ps-3">
-                                            <div class="text-base font-semibold">Thomas Lean</div>
-                                            <div class="font-normal text-body">thomas@flowbite.com</div>
-                                        </div>
-                                </th>
-                                <td class="px-6 py-4">
-                                    UI/UX Engineer
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center">
-                                        <div class="h-2.5 w-2.5 rounded-full bg-success me-2"></div> Online
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-
-                                    <a href="#" type="button" data-modal-show="editUserModal" class="font-medium text-fg-brand hover:underline">Edit user</a>
-                                </td>
-                            </tr>
-                            <tr class="bg-neutral-primary-soft hover:bg-neutral-secondary-medium">
-                                <td class="w-4 p-4">
-                                    <div class="flex items-center">
-                                        <input id="table-checkbox-56" type="checkbox" value="" class="w-4 h-4 border border-default-medium rounded-xs bg-neutral-secondary-medium focus:ring-2 focus:ring-brand-soft" />
-                                            <label for="table-checkbox-56" class="sr-only">Table checkbox</label>
-                                    </div>
-                                </td>
-                                <th scope="row" class="flex items-center px-6 py-4 font-medium text-heading whitespace-nowrap">
-                                    <img class="w-10 h-10 rounded-full" src="/docs/images/people/profile-picture-4.jpg" alt="Jese image" />
-                                        <div class="ps-3">
-                                            <div class="text-base font-semibold">Leslie Livingston</div>
-                                            <div class="font-normal text-body">leslie@flowbite.com</div>
-                                        </div>
-                                </th>
-                                <td class="px-6 py-4">
-                                    SEO Specialist
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center">
-                                        <div class="h-2.5 w-2.5 rounded-full bg-danger me-2"></div> Offline
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-
-                                    <a href="#" type="button" data-modal-show="editUserModal" class="font-medium text-fg-brand hover:underline">Edit user</a>
-                                </td>
-                            </tr>
+                            </tr>)}
                         </tbody>
                     </table>
 
