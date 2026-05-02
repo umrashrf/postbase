@@ -15,7 +15,7 @@ export const auth = betterAuth({
     // Following is only needed for local testing
     // You can avoid this by using /etc/hosts and nginx servers
     // baseURL: 'http://localhost:8081',
-    // trustedOrigins: ["http://localhost:8080"],
+    // trustedOrigins: ["http://localhost:8081", "http://localhost:5173", "http://localhost:5174"],
     // advanced: {
     //     defaultCookieAttributes: {
     //         sameSite: "none",
