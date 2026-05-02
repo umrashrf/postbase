@@ -75,7 +75,11 @@ export const auth = betterAuth({
         }
     },
     plugins: [
-        admin(),
+        admin(
+            // {
+            //     adminUserIds: [], // add user id for an admin
+            // }
+        ),
         // phoneNumber({
         //     sendOTP: ({ phoneNumber, code }, request) => {
         //         // Implement sending OTP code via SMS
