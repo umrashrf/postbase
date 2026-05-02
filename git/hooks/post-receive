@@ -18,4 +18,9 @@ cd ../frontend
 npm install
 npm run build
 
+cd ../admin
+npm install
+npm run build
+
 rsync -avh /your/server/your_repo/frontend/dist/ /var/www/html/your_website
+rsync -avh /your/server/your_repo/admin/dist/ /var/www/html/your_website/admin
