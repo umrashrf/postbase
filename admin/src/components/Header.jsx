@@ -36,21 +36,21 @@ export default function Header({ user }) {
                 <div className="flex items-center gap-4">
                     {user ? (
                         <div className="relative">
-                            <button onClick={() => setMenu(!menu)} className="flex items-center gap-2 px-3 py-1 border rounded-md hover:bg-gray-50">
+                            <button onClick={() => setMenu(!menu)} className="flex items-center gap-2 px-3 py-1 border rounded-md hover:bg-gray-500">
                                 <img src={user.image} className="w-8 h-8 rounded-full" alt="profile" />
                                 <span className="hidden sm:inline text-sm">{user.name || user.email}</span>
                             </button>
                             {menu && (
-                                <div className="absolute right-0 mt-2 bg-white border rounded-md shadow-lg w-48 z-50">
-                                    <a href="/dashboard" className="block px-4 py-2 hover:bg-gray-50">Dashboard</a>
-                                    <a href="/billing" className="block px-4 py-2 hover:bg-gray-50">Billing</a>
+                                <div className="absolute right-0 mt-2 border rounded-md shadow-lg w-48 z-50">
+                                    <a href="/dashboard" className="block px-4 py-2 hover:bg-gray-500">Dashboard</a>
+                                    <a href="/billing" className="block px-4 py-2 hover:bg-gray-500">Billing</a>
                                     <button onClick={() => signOut({
                                         fetchOptions: {
                                             onSuccess: () => {
                                                 location.href = import.meta.env.VITE_FRONTEND_URL;
                                             },
                                         },
-                                    })} className="w-full text-left px-4 py-2 hover:bg-gray-50 cursor-pointer">Logout</button>
+                                    })} className="w-full text-left px-4 py-2 hover:bg-gray-700 cursor-pointer">Logout</button>
                                 </div>
                             )}
                         </div>
