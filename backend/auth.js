@@ -77,7 +77,10 @@ export const auth = betterAuth({
     plugins: [
         admin(
             // {
-            //     adminUserIds: [], // add user id for an admin
+            //     // add user id for an admin
+            //     adminUserIds: [
+            //         process.env.ADMIN_USER_ID,
+            //     ],
             // }
         ),
         // phoneNumber({
