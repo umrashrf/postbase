@@ -2,7 +2,7 @@
 
 This directory contains working but incomplete version of admin panel. It's work in progress. PRs are welcome!
 
-![Admin Panel Demo Screenshot](assets/img/admin-ui.png)
+![Admin Panel Demo Screenshot](public/assets/img/admin-ui.png)
 
 ## Install
 
