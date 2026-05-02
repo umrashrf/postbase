@@ -299,9 +299,6 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
             const request = mapRequest(req);
             request.resource = current;
 
-            console.log('request.auth.id', request.auth.id);
-            console.log('current.id', current.id);
-
             const allowed = await evaluator.evaluate(table, 'update', request, current);
             if (!allowed) return res.status(403).json({ error: 'forbidden' });
 
