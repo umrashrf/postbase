@@ -11,8 +11,8 @@ export default function Users({ user }) {
                 query: {
                     limit: 100,
                     offset: 0,
-                    //sortBy: "name",
-                    //sortDirection: "desc",
+                    sortBy: "createdAt",
+                    sortDirection: "desc",
                 },
             });
             setUsers(data.users);
