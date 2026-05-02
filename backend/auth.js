@@ -1,4 +1,5 @@
 import { betterAuth } from "better-auth";
+import { admin } from "better-auth/plugins"
 import { createPool } from "./lib/postbase/db.js";
 //import { phoneNumber } from "better-auth/plugins"
 //import { makePostbaseAdminClient } from "./lib/postbase/adminClient.js";
@@ -14,7 +15,7 @@ export const auth = betterAuth({
     // Following is only needed for local testing
     // You can avoid this by using /etc/hosts and nginx servers
     // baseURL: 'http://localhost:8081',
-    // trustedOrigins: ["http://localhost:8080"],
+    // trustedOrigins: ["http://localhost:8081", "http://localhost:5173", "http://localhost:5174"],
     // advanced: {
     //     defaultCookieAttributes: {
     //         sameSite: "none",
@@ -74,6 +75,14 @@ export const auth = betterAuth({
         }
     },
     plugins: [
+        admin(
+            // {
+            //     // add user id for an admin
+            //     adminUserIds: [
+            //         process.env.ADMIN_USER_ID,
+            //     ],
+            // }
+        ),
         // phoneNumber({
         //     sendOTP: ({ phoneNumber, code }, request) => {
         //         // Implement sending OTP code via SMS
