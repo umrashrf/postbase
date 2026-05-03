@@ -13,7 +13,7 @@ export function authMiddleware(pool) {
 
             // Lookup session in database
             const sql = `
-                SELECT s.*, u.id AS user_id, u.email, u.name
+                SELECT s.*, u.id AS user_id, u.email, u.name, u.role
                 FROM "session" s
                 JOIN "user" u ON u.id = s."userId"
                 WHERE s.token = $1
@@ -44,6 +44,7 @@ export function authMiddleware(pool) {
                 id: String(session.user_id),
                 email: session.email,
                 name: session.name,
+                role: session.role,
             };
 
             next();

@@ -14,7 +14,7 @@ export default {
         /** === USERS === */
         users: {
             // Allow read and update if the auth.id matches the userId (row id)
-            read: (req, res) => H.isAuth(req) && req.auth.id === String(res.id),
+            read: (req, res) => H.isAuth(req) && (req.auth.id === String(res.id) || req.user?.role === "admin"),
             update: (req, res) => H.isAuth(req) && req.auth.id === String(res.id),
 
             // Allow create if auth.id == resource.userId
