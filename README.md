@@ -53,7 +53,7 @@ Special thanks to [@better-auth/better-auth](https://github.com/better-auth/bett
 
 Brand new project launched 02 Nov 2025, this is boiler plate but working! Expect heavy changes coming every few hours until stable
 
-Mostly all code is ChatGPT generated but manually tested by human.
+The project started with the help of LLMs but over time heavy use of LLMs stopped due to large uncontrolled changes.
 
 ## Getting Started
 
