@@ -199,7 +199,3 @@ const { onRequest } = require("firebase-functions/https");
 - [x] Firebase Firestore Replacement
 - [x] Firebase Storage Replacement (Filebased Only)
 - [x] Firebase Storage Replacement (HTTPS Based Upload)
-
-## License 
-
-MIT
