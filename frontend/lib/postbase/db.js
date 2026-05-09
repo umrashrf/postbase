@@ -266,7 +266,8 @@ class DocumentReference {
         const res = await fetch(url, { headers });
         if (!res.ok) {
             const errorData = await res.json();
-            if (errorData.hasOwnProperty('error') && errorData.error === 'not_found') {
+            console.error(`HTTP error! Status: ${res.status}, Details: ${JSON.stringify(errorData)}`);
+            if (errorData.hasOwnProperty('error')) {
                 return new DocumentSnapshot(this.id, null, this.fullPath, this.db);
             }
         }
@@ -478,10 +479,9 @@ class QueryBuilder {
 
         if (!res.ok) {
             const errorData = await res.json();
-            if (errorData.hasOwnProperty('error') && errorData.error === 'not_found') {
+            console.error(`HTTP error! Status: ${res.status}, Details: ${JSON.stringify(errorData)}`);
+            if (errorData.hasOwnProperty('error')) {
                 return new DocumentsSnapshot([]);
-            } else {
-                throw new Error(`HTTP error! Status: ${res.status}, Details: ${JSON.stringify(errorData)}`);
             }
         }
 
