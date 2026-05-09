@@ -218,7 +218,7 @@ export function makePostbaseAdminClient({ pool }) {
             this.ref = ref;
         }
 
-        exists() {
+        get exists() {
             return !!this._data;
         }
 
@@ -277,7 +277,7 @@ export function makePostbaseAdminClient({ pool }) {
 
         async set(data, opts = {}, client = pool) {
             const existing = await this.get(client); // data has been deserialized
-            const base = opts.merge && existing.exists() ? existing.raw() : {};
+            const base = opts.merge && existing.exists ? existing.raw() : {};
             const finalData = applyFieldValues(base, serializeForWrite(data));
 
             const sql = `
@@ -293,7 +293,7 @@ export function makePostbaseAdminClient({ pool }) {
 
         async update(partial, client = pool) {
             const existing = await this.get(client);
-            if (!existing.exists()) throw new Error("Document does not exist");
+            if (!existing.exists) throw new Error("Document does not exist");
             const merged = applyFieldValues(existing.raw(), serializeForWrite(partial));
             return await this.set(merged, { merge: false }, client);
         }
