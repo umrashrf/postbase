@@ -25,7 +25,7 @@ export default function Home({ user }) {
 
                     <div className="flex flex-col gap-2 relative">
                         <div className="bg-gray-900 text-green-400 font-mono text-sm rounded-lg shadow-lg p-6 overflow-x-auto">
-                            <code className="block whitespace-pre overflow-x-scroll">{
+                            <code className="block whitespace-pre w-xs md:w-xl lg:w-4xl text-xs text-nowrap overflow-x-auto">{
                                 `import { initializeApp } from "../lib/postbase/compat/firebase/app";
 import { getFirestore } from "../lib/postbase/compat/firebase/firestore/lite";
 import { getStorage } from "../lib/postbase/compat/firebase/storage";
@@ -62,7 +62,7 @@ export const rtdbClient = getDatabase(app);`
 
                     <div className="relative">
                         <div className="bg-gray-900 text-green-400 font-mono text-sm rounded-lg shadow-lg p-6 overflow-x-auto">
-                            <code className="block whitespace-pre overflow-x-scroll">{
+                            <code className="block whitespace-pre w-xs md:w-xl lg:w-4xl text-xs text-nowrap overflow-x-scroll">{
                                 `import { 
     getAuth,
     signInWithEmailAndPassword,
@@ -95,8 +95,8 @@ await signOut(auth);`
                     </div>
 
                     <div className="flex flex-col gap-2 relative">
-                        <div className="bg-gray-900 text-green-400 font-mono text-sm rounded-lg shadow-lg p-6 overflow-x-auto">
-                            <code className="block whitespace-pre overflow-x-scroll">{
+                        <div className="bg-gray-900 text-green-400 font-mono text-sm rounded-lg shadow-lg p-6">
+                            <code className="block whitespace-pre w-xs md:w-xl lg:w-4xl text-xs text-nowrap overflow-x-scroll">{
                                 `import { db } from "./postbase";
 
 await db.collection('users').addDoc({ name: "Umair" });
@@ -109,7 +109,7 @@ await db.collection('users').doc('docId').get();
                         </div>
                         <div className="bg-gray-900 text-green-400 font-mono text-sm rounded-lg shadow-lg p-6 overflow-x-auto">
                             <pre>
-                                <code className="block whitespace-pre overflow-x-scroll">{
+                                <code className="block whitespace-pre w-xs md:w-xl lg:w-4xl text-xs text-nowrap overflow-x-scroll">{
                                     `import { storage } from "./postbase";
 
 const profilePicFile = new File(...); // HTMLFileInput
@@ -123,7 +123,7 @@ const profileUrl = await remoteFile.ref.getDownloadURL();`
                             </pre>
                         </div>
                         <div className="bg-gray-900 text-green-400 font-mono text-sm rounded-lg shadow-lg p-6 overflow-x-auto">
-                            <code className="block whitespace-pre overflow-x-scroll">{
+                            <code className="block whitespace-pre w-xs md:w-xl lg:w-4xl text-xs text-nowrap overflow-x-scroll">{
                                 `import { rtdbClient } from '../postbase';
 
 // please check frontend/lib/postbase/tests/rtdb.client.test.js
