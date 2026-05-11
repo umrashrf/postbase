@@ -202,10 +202,10 @@ const { onRequest } = require("firebase-functions/https");
 
 ## Star History
 
-<a href="https://www.star-history.com/?repos=umrashrf%2Fpostbase&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=umrashrf/postbase&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=umrashrf/postbase&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=umrashrf/postbase&type=date&legend=top-left" />
- </picture>
+<a href="https://star-history.com/#umrashrf/postbase&Date">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=umrashrf/postbase&type=Date&theme=dark" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=umrashrf/postbase&type=Date" />
+    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=umrashrf/postbase&type=Date" />
+  </picture>
 </a>
