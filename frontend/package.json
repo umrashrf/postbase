@@ -1,6 +1,6 @@
 {
-    "name": "postbase-frontend",
-    "version": "0.1.0",
+    "name": "@postbase/frontend",
+    "version": "0.1.1",
     "license": "MIT",
     "author": "Umair Ashraf",
     "url": "http://github.com/umrashrf/postbase",
