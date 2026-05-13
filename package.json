@@ -2,7 +2,9 @@
     "name": "postbase",
     "version": "0.1.0",
     "dependencies": {
-        "@postbase/backend": "^0.1.0",
-        "@postbase/frontend": "^0.1.0"
+        "@postbase/server": "^0.1.0",
+        "@postbase/backend": "^0.1.1",
+        "@postbase/client": "^0.1.0",
+        "@postbase/frontend": "^0.1.1"
     }
 }
