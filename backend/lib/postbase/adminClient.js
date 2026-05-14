@@ -235,6 +235,7 @@ export function makePostbaseAdminClient({ pool }) {
         constructor(docs) {
             this.docs = docs;
         }
+        map(fn) { this.docs.map(fn); }
         forEach(fn) { this.docs.forEach(fn); }
         get empty() { return this.docs.length === 0; }
         get size() { return this.docs.length; }
