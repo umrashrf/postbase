@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "type": "module",
     "scripts": {
-        "test": "jest"
+        "test": "NODE_OPTIONS=--experimental-vm-modules npx jest"
     },
     "devDependencies": {
         "better-auth": "^1.3.34",
