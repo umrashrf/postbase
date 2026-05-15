@@ -101,55 +101,89 @@ export function makePostbaseAdminClient({ pool }) {
 
     // === WHERE builder ===
     function buildWhere(filters = []) {
-        const where = [];
+        const whereClauses = [];
         const params = [];
-        let i = 1;
+        let idx = 1;
 
         for (const f of filters) {
             const { field, op, value } = f;
-            const sqlOp = op === "==" ? "=" : op;
 
-            if (field === "__id") {
-                params.push(value);
-                where.push(`id ${sqlOp} $${i++}`);
-                continue;
-            }
+            if (!ALLOWED_OPS.has(op.toUpperCase())) throw new Error(`Invalid operator: ${op}`);
 
-            else if (op === "IN") {
-                if (!Array.isArray(value)) throw new Error("IN requires array");
-                const ph = value.map(() => `$${i++}`).join(",");
-                params.push(...value);
-                where.push(`data->>'${field}' IN (${ph})`);
-                continue;
-            }
-
-            else if (op === "array-contains") {
-                if (value && value._type === "ref") {
-                    params.push(JSON.stringify([value]));
-                    where.push(`data->'${field}' @> $${i++}::jsonb`);
-                } else {
-                    params.push(value);
-                    where.push(`(data->'${field}') ? $${i++}`);
+            // array-contains
+            if (op.toUpperCase() === 'ARRAY-CONTAINS') {
+                let _field = field;
+                _field = `data->'${field}'`;
+                // Document ID filter
+                if (field === "__id") {
+                    _field = 'id';
                 }
-                continue;
+                if (value && typeof value === 'object' && value._type === 'ref') {
+                    params.push(JSON.stringify([value]));
+                    whereClauses.push(`${_field} @> $${idx++}::jsonb`);
+                    continue;
+                }
+                params.push(value);
+                whereClauses.push(`(${_field}) ? $${idx++}`);
+            }
+
+            // IN
+            else if (op.toUpperCase() === 'IN') {
+                let _field = field;
+                _field = `data->>'${field}'`;
+                // Document ID filter
+                if (field === "__id") {
+                    _field = 'id';
+                }
+                if (!Array.isArray(value) || value.length === 0)
+                    throw new Error('IN requires non-empty array');
+                const placeholders = value.map(() => `$${idx++}`);
+                params.push(...value);
+                whereClauses.push(`${_field} IN (${placeholders.join(',')})`);
+            }
+
+            // LIKE / ILIKE
+            else if (op.toUpperCase() === 'LIKE' || op.toUpperCase() === 'ILIKE') {
+                let _field = field;
+                _field = `data->>'${field}'`;
+                // Document ID filter
+                if (field === "__id") {
+                    _field = 'id';
+                }
+                params.push(value);
+                whereClauses.push(`${_field} ${op} $${idx++}`);
             }
 
             else if (isDocumentRef(value)) {
+                let _field = field;
+                _field = `data->'${field}'`;
+                // Document ID filter
+                if (field === "__id") {
+                    _field = 'id';
+                }
+                const sqlOp = op === "==" ? "=" : op;
                 params.push(resolveReference(value));
-                where.push(`data->'${field}'->>'path' ${sqlOp} $${i++}`);
+                whereClauses.push(`${_field}->>'path' ${sqlOp} $${idx++}`);
                 continue;
             }
 
+            // default (string or primitive)
             else {
+                let _field = field;
+                _field = `data->>'${field}'`;
+                // Document ID filter
+                if (field === "__id") {
+                    _field = 'id';
+                }
+                const sqlOp = op === "==" ? "=" : op;
                 params.push(value);
-                where.push(`data->>'${field}' ${sqlOp} $${i++}`);
+                whereClauses.push(`${_field} ${sqlOp} $${idx++}`);
             }
-
         }
 
         return {
-            whereSql: where.length ? "WHERE " + where.join(" AND ") : "",
-            params,
+            whereSql: whereClauses.length ? `WHERE ${whereClauses.join(' AND ')}` : '',
+            params
         };
     }
 
