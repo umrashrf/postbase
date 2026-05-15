@@ -96,7 +96,7 @@ export function makePostbaseAdminClient({ pool }) {
         'LIKE',
         'ILIKE',
         'IN',
-        'array-contains', // only supports strings "large" in ["red", "blue", "large"]
+        'ARRAY-CONTAINS', // only supports strings "large" in ["red", "blue", "large"]
     ]);
 
     // === WHERE builder ===
@@ -110,7 +110,7 @@ export function makePostbaseAdminClient({ pool }) {
 
             if (!ALLOWED_OPS.has(op.toUpperCase())) throw new Error(`Invalid operator: ${op}`);
 
-            // array-contains
+            // ARRAY-CONTAINS
             if (op.toUpperCase() === 'ARRAY-CONTAINS') {
                 let _field = field;
                 _field = `data->'${field}'`;
