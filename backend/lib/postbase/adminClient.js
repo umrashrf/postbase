@@ -451,7 +451,7 @@ export function makePostbaseAdminClient({ pool }) {
 
     function isDocumentRef(value) {
         if (!value || typeof value !== "object") return false;
-        if (value.id && value.path && value.collectionName) return true;
+        if (value.id && (value.hasOwnProperty("parentPath") || value.parentPath) && value.collectionName) return true;
         if (value._type === 'ref' && value.path) return true;
         return false;
     }
