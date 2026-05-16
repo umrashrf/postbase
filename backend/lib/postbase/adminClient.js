@@ -287,8 +287,8 @@ export function makePostbaseAdminClient({ pool }) {
 
         /** Build full document path (for chaining use only) */
         get fullPath() {
-            const base = this.parentPath ? `${this.parentPath}/${this.collectionName}` : this.collectionName;
-            return `${base}/${this.id}`;
+            const base = this.parentPath ? `${this.parentPath}/${encodeURIComponent(this.collectionName)}` : encodeURIComponent(this.collectionName);
+            return `${base}/${encodeURIComponent(this.id)}`;
         }
 
         /** Allow chaining subcollections under this document */
