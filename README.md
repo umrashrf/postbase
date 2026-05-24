@@ -1,3 +1,5 @@
+![Launch Date](https://img.shields.io/badge/Launch-02%20Nov%202025-blue)
+
 [<img src="https://i.imgur.com/oRFWBv7.png" height="80px" />](https://buymeacoffee.com/umrashrf)
 
 ![Home Page Screenshot](https://github.com/umrashrf/postbase/blob/main/assets/img/HomePageScreenshot.png?raw=true)
