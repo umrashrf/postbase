@@ -1,4 +1,4 @@
-![Launch Date](https://img.shields.io/badge/Launch%20Date-02%20Nov%202025-blue)
+[<img src="https://img.shields.io/badge/Launch%20Date-02%20Nov%202025-blue" />](https://github.com/umrashrf/postbase/graphs/contributors?selectedMetric=commits)
 
 [<img src="https://i.imgur.com/oRFWBv7.png" height="80px" />](https://buymeacoffee.com/umrashrf)
 
