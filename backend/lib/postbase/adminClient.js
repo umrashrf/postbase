@@ -93,6 +93,7 @@ export function makePostbaseAdminClient({ pool }) {
         '<=',
         '>',
         '>=',
+        '@>',
         'LIKE',
         'ILIKE',
         'IN',
@@ -152,6 +153,17 @@ export function makePostbaseAdminClient({ pool }) {
                 }
                 params.push(value);
                 whereClauses.push(`${_field} ${op} $${idx++}`);
+            }
+
+            else if (op === '@>') {
+                let _field = field;
+                _field = `data->'${field}'`;
+                // Document ID filter
+                if (field === "__id") {
+                    _field = 'id';
+                }
+                params.push(value);
+                whereClauses.push(`${_field} ${op} $${idx++}::jsonb`);
             }
 
             else if (isDocumentRef(value)) {

@@ -26,6 +26,7 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
         '<=',
         '>',
         '>=',
+        '@>',
         'LIKE',
         'ILIKE',
         'IN',
@@ -108,6 +109,17 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
                 }
                 params.push(value);
                 whereClauses.push(`${_field} ${op} $${idx++}`);
+            }
+
+            else if (op === '@>') {
+                let _field = field;
+                _field = `data->'${field}'`;
+                // Document ID filter
+                if (field === "__id") {
+                    _field = 'id';
+                }
+                params.push(value);
+                whereClauses.push(`${_field} ${op} $${idx++}::jsonb`);
             }
 
             else if (isDocumentRef(value)) {
@@ -413,7 +425,7 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
             // Always force parent filter
             filters.push({
                 field: 'parent',
-                op: '==',
+                op: '@>',
                 value: {
                     collectionName: parentTable,
                     id: parentId,

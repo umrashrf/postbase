@@ -68,7 +68,7 @@ export function setupWebsocket({ server }) {
                     // FIX: Provide fake collectionName & id so buildWhere recognizes it
                     query.filters.push({
                         field: 'parent',
-                        op: '==',
+                        op: '@>',
                         value: {
                             path: parentPath,
                             collectionName: query.parent.collectionName ?? null,
