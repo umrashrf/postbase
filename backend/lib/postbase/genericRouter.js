@@ -143,9 +143,13 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
                 if (field === "__id") {
                     _field = 'id';
                 }
-                const sqlOp = op === "==" ? "=" : op;
-                params.push(value);
-                whereClauses.push(`${_field} ${sqlOp} $${idx++}`);
+                let sqlOp = op === "==" ? "=" : op;
+                if (value === null) {
+                    whereClauses.push(`${_field} IS NULL`);
+                } else {
+                    params.push(value);
+                    whereClauses.push(`${_field} ${sqlOp} $${idx++}`);
+                }
             }
         }
 
