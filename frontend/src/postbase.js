@@ -1,3 +1,4 @@
+// TODO: npm install @postbase/client and replace with @postbase/client/compat/firebase/..
 import { initializeApp } from "../lib/postbase/compat/firebase/app";
 import { getFirestore } from "../lib/postbase/compat/firebase/firestore/lite";
 import { getStorage } from "../lib/postbase/compat/firebase/storage";

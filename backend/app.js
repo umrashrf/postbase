@@ -3,6 +3,7 @@ import express from 'express';
 import { WebSocketServer } from 'ws';
 import { toNodeHandler } from "better-auth/node";
 
+// TODO: npm install @postbase/server and replace with @postbase/server/..
 import { createPool } from './lib/postbase/db.js';
 import { makeGenericRouter } from './lib/postbase/genericRouter.js';
 import { createStorageRouter } from './lib/postbase/storage.js';
