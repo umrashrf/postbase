@@ -26,7 +26,8 @@ export default function Home({ user }) {
                     <div className="flex flex-col gap-2 relative">
                         <div className="bg-gray-900 text-green-400 font-mono text-sm rounded-lg shadow-lg p-6 overflow-x-auto">
                             <code className="block whitespace-pre w-xs md:w-xl lg:w-4xl text-xs text-nowrap overflow-x-auto">{
-                                `import { initializeApp } from "../lib/postbase/compat/firebase/app";
+                                `// TODO: npm install @postbase/client and replace with @postbase/client/compat/firebase/..
+import { initializeApp } from "../lib/postbase/compat/firebase/app";
 import { getFirestore } from "../lib/postbase/compat/firebase/firestore/lite";
 import { getStorage } from "../lib/postbase/compat/firebase/storage";
 import { getDatabase } from "../lib/postbase/compat/firebase/database";
