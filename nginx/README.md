@@ -51,9 +51,10 @@ Make sure your nginx web server is running and is serving all your domains liste
 *If prompted to choose an option, select option 3 or an option which says something like "an existing web server running".*
 
 ```
-cd nginx && rm -rf letsencrypt
 sudo certbot certonly -d your_website.com -d www.your_website.com -w /var/www/html/your_website/
 ```
+
+This will generate your certificate at /etc/letsencrypt/live/your_domain.com/fullchain.pem and key at /etc/letsencrypt/live/your_domain.com/privkey.pem.
 
 Once the certificates are generated, update your https nginx file with the right paths and copy over to /etc/nginx/sites-available/ and /etc/nginx/sites-enabled/ and restart nginx. Don't forget to delete the older http nginx file.
 
