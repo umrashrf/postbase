@@ -33,10 +33,29 @@ Installation instructions https://certbot.eff.org/instructions?ws=other&os=pip
 
 After installing the certbot, generate the certificates and private keys.
 
+#### Manual Method
+
+Using this method, you have to manually set DNS records which can be slow and error-prone but works in complicated situations.
+
 ```
 cd nginx && rm -rf letsencrypt
 sudo certbot certonly --manual --preferred-challenges dns-01 -d your_website.com -d www.your_website.com
 ```
+
+#### Recommended Method
+
+To use this method, you will need two nginx config files (http and https). First only copy and enable http nginx file and restart nginx to use the following command to generate your certificates.
+
+Make sure your nginx web server is running and is serving all your domains listed in the command below.
+
+*If prompted to choose an option, select option 3 or an option which says something like "an existing web server running".*
+
+```
+cd nginx && rm -rf letsencrypt
+sudo certbot certonly -d your_website.com -d www.your_website.com -w /var/www/html/your_website/
+```
+
+Once the certificates are generated, update your https nginx file with the right paths and copy over to /etc/nginx/sites-available/ and /etc/nginx/sites-enabled/ and restart nginx. Don't forget to delete the older http nginx file.
 
 ## Enable Nginx
 
