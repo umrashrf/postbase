@@ -1,5 +1,11 @@
 # Systemd for backend process
 
+## Install
+
+```
+cp your_website.com.service /etc/systemd/system/
+```
+
 ### Reload the systemd user configuration to recognize the new service:
 
 ```
