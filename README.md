@@ -78,6 +78,9 @@ Make a drop-in replacement library for Firebase (keep same naming convention). S
 ### Getting Started
 
 ```javascript
+/* Or npm instal @postbase/client
+ * import { initializeApp } from '@postbase/client/compat/firebase/app'
+ */
 import { initializeApp } from "../lib/postbase/compat/firebase/app";
 import { getFirestore } from "../lib/postbase/compat/firebase/firestore/lite";
 import { getStorage } from "../lib/postbase/compat/firebase/storage";
