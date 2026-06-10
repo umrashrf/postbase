@@ -14,6 +14,36 @@ Firebase 💔 | Supabase 💔 | Postbase ❤️
 
 Demo Preact app is included !
 
+# Table of Contents
+
+* [Postbase](#postbase)
+   * [Features](#features)
+      * [Authentication Features](#authentication-features)
+      * [Database Features](#database-features)
+      * [File Upload / Storage](#file-upload--storage)
+      * [Admin &amp; System](#admin--system)
+   * [Made with Postbase](#made-with-postbase)
+      * [1. <a href="https://www.afood.website" rel="nofollow">AFood.Website</a>](https://www.afood.website)
+      * [2. <a href="https://www.mamiride.com" rel="nofollow">Mamiride.com</a>](https://www.mamiride.com)
+      * [3. <a href="https://www.provitres.ca" rel="nofollow">Provitres.ca</a>](https://www.provitres.ca)
+      * [4. <a href="https://email.riamu.io" rel="nofollow">email.riamu.io</a>](https://email.riamu.io)
+   * [Disclaimer !!!](#disclaimer-)
+   * [Getting Started](#getting-started)
+   * [Vision](#vision)
+   * [Docs](#docs)
+      * [Getting Started](#getting-started-1)
+      * [Authentication (Firebase Like API)](#authentication-firebase-like-api)
+         * [Sign Up](#sign-up)
+         * [Sign In](#sign-in)
+         * [auth.onAuthStateChanged, auth.currentUser and auth.currentUser.getIdToken()](#authonauthstatechanged-authcurrentuser-and-authcurrentusergetidtoken)
+      * [Document Storage (Firestore Like API)](#document-storage-firestore-like-api)
+         * [Collections, get/set/where/orderBy/limit/delete](#collections-getsetwhereorderbylimitdelete)
+         * [Admin Client](#admin-client)
+      * [Todo](#todo)
+      * [In Progress](#in-progress)
+      * [Done](#done)
+   * [Star History](#star-history)
+
 ## Features
 
 ### Authentication Features
