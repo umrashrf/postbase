@@ -61,6 +61,14 @@ Special thanks to [@better-auth/better-auth](https://github.com/better-auth/bett
 
 ![Mamiride.com](https://github.com/umrashrf/postbase/blob/feature/websites-using-postbase/assets/img/websites-made-with-postbase/Mamiride.com.png?raw=1)
 
+### 3. [email.riamu.io](https://email.riamu.io)
+
+![email.riamu.io](https://github.com/umrashrf/postbase/blob/feature/websites-using-postbase/assets/img/websites-made-with-postbase/email.riamu.io.png?raw=1)
+
+### 4. [Provitres.ca](https://www.provitres.ca)
+
+![Provitres.ca](https://github.com/umrashrf/postbase/blob/feature/websites-using-postbase/assets/img/websites-made-with-postbase/email.riamu.io.png?raw=1)
+
 ## Disclaimer !!!
 
 Brand new project launched 02 Nov 2025, this is boiler plate but working! Expect heavy changes coming every few hours until stable
