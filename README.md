@@ -51,6 +51,10 @@ Special thanks to [@better-auth/better-auth](https://github.com/better-auth/bett
 - [x] Systemd Service ⚙️
 - [x] Git Push Deployment ⬆️🐙
 
+## Websites using Postbase
+
+![AFood.Website](https://github.com/umrashrf/postbase/blob/feature/websites-using-postbase/assets/img/websites-made-with-postbase/AFood.Website.png?raw=1)
+
 ## Disclaimer !!!
 
 Brand new project launched 02 Nov 2025, this is boiler plate but working! Expect heavy changes coming every few hours until stable
