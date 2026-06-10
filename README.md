@@ -53,6 +53,8 @@ Special thanks to [@better-auth/better-auth](https://github.com/better-auth/bett
 
 ## Websites using Postbase
 
+### [AFood.Website](https://www.afood.website)
+
 ![AFood.Website](https://github.com/umrashrf/postbase/blob/feature/websites-using-postbase/assets/img/websites-made-with-postbase/AFood.Website.png?raw=1)
 
 ## Disclaimer !!!
