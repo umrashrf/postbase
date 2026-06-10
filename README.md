@@ -65,9 +65,9 @@ Special thanks to [@better-auth/better-auth](https://github.com/better-auth/bett
 
 ![Provitres.ca](https://github.com/umrashrf/postbase/blob/feature/websites-using-postbase/assets/img/websites-made-with-postbase/Provitres.ca.png?raw=1)
 
-### 4. [Provitres.ca](https://www.provitres.ca)
+### 4. [email.riamu.io](https://email.riamu.io)
 
-![Provitres.ca](https://github.com/umrashrf/postbase/blob/feature/websites-using-postbase/assets/img/websites-made-with-postbase/email.riamu.io.png?raw=1)
+![email.riamu.io](https://github.com/umrashrf/postbase/blob/feature/websites-using-postbase/assets/img/websites-made-with-postbase/email.riamu.io.png?raw=1)
 
 ## Disclaimer !!!
 
