@@ -57,6 +57,8 @@ Brand new project launched 02 Nov 2025, this is boiler plate but working! Expect
 
 The project started with the help of LLMs but over time heavy use of LLMs stopped due to large uncontrolled changes.
 
+This is the only original and official Postbase. There are Postbase copycats claiming to be official replacement. Do your research!
+
 ## Getting Started
 
 To create a new project with Postbase, all you have to do is clone this repo.
