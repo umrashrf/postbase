@@ -51,7 +51,7 @@ Special thanks to [@better-auth/better-auth](https://github.com/better-auth/bett
 - [x] Systemd Service ⚙️
 - [x] Git Push Deployment ⬆️🐙
 
-## Websites using Postbase
+## Made with Postbase
 
 ### 1. [AFood.Website](https://www.afood.website)
 
