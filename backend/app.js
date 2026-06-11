@@ -10,7 +10,7 @@ import { createStorageRouter } from './lib/postbase/storage.js';
 import { createLocalStorage } from './lib/postbase/local-storage.js';
 import { createRtdbWs } from './lib/postbase/rtdb/ws.js';
 import { createRtdbRouter } from './lib/postbase/rtdb/router.js';
-//import { makePostbaseAdminClient } from './lib/postbase/adminClient.js';
+import { makePostbaseAdminClient } from './lib/postbase/adminClient.js';
 import rulesModuleDB from './postbase_db_rules.js';
 import rulesModuleStorage from './postbase_storage_rules.js';
 import rulesModuleRTDB from './postbase_rtdb_rules.js';
@@ -22,12 +22,12 @@ const POSTBASE_STORAGE_PUBLIC_URL = process.env.POSTBASE_STORAGE_PUBLIC_URL || '
 
 
 // Initialize DB pool using env variables
-const pool = createPool({
+export const pool = createPool({
     connectionString: process.env.DATABASE_URL
 });
 
 // This is firestore alternative
-//const db = makePostbaseAdminClient({ pool });
+export const db = makePostbaseAdminClient({ pool });
 
 // This is firebase storage alternative
 const bucket = createLocalStorage(

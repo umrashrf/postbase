@@ -1,12 +1,8 @@
 import { betterAuth } from "better-auth";
 import { admin } from "better-auth/plugins"
-import { createPool } from "./lib/postbase/db.js";
+import { pool } from "./app";
 //import { phoneNumber } from "better-auth/plugins"
 //import { makePostbaseAdminClient } from "./lib/postbase/adminClient.js";
-
-const pool = createPool({
-    connectionString: process.env.DATABASE_URL
-});
 
 // Enable if required
 //const db = makePostbaseAdminClient({ pool });
