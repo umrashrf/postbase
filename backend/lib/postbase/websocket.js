@@ -46,13 +46,11 @@ export function setupWebsocket({ server }) {
         console.log('Connecting pool...');
         const client = await pool.connect();
         console.log('Connected to pool');
-        // Each connection gets its own PG client to LISTEN
-        console.log(`LISTEN changes_${collectionName}`);
-        await client.query(`LISTEN changes_${collectionName}`);
 
         // Receive the initial query definition from the client
         console.log('Attaching ws.once(\'message\')');
         ws.once('message', async (msg) => {
+            //console.log('ws.onmessage', msg);
             try {
                 const query = JSON.parse(msg.toString());
                 console.log('query', query);
@@ -125,6 +123,10 @@ export function setupWebsocket({ server }) {
             client.query(`UNLISTEN changes_${collectionName}`).catch(console.error);
             client.release();
         });
+
+        // Each connection gets its own PG client to LISTEN
+        console.log(`LISTEN changes_${collectionName}`);
+        await client.query(`LISTEN changes_${collectionName}`);
     });
 
     return wss;
