@@ -14,8 +14,8 @@ import { makePostbaseAdminClient } from './lib/postbase/adminClient.js';
 import rulesModuleDB from './postbase_db_rules.js';
 import rulesModuleStorage from './postbase_storage_rules.js';
 import rulesModuleRTDB from './postbase_rtdb_rules.js';
-import { authenticate } from './middlewares/auth_middleware.js';
-import { auth } from './auth.js';
+import { authMiddleware } from './lib/postbase/middlewares/auth.js';
+import { betterAuth } from './auth.js';
 
 const POSTBASE_STORAGE_ROOT_DIR = process.env.POSTBASE_STORAGE_ROOT_DIR || '/var/www/html/www.yourwebsite.com/uploads';
 const POSTBASE_STORAGE_PUBLIC_URL = process.env.POSTBASE_STORAGE_PUBLIC_URL || 'http://localhost:5173/uploads';
@@ -24,6 +24,11 @@ const POSTBASE_STORAGE_PUBLIC_URL = process.env.POSTBASE_STORAGE_PUBLIC_URL || '
 // Initialize DB pool using env variables
 export const pool = createPool({
     connectionString: process.env.DATABASE_URL
+});
+
+const authenticate = authMiddleware(pool);
+const auth = betterAuth({
+    database: pool,
 });
 
 // This is firestore alternative
