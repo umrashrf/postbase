@@ -2,7 +2,7 @@ import './env.js';
 import fs from 'node:fs';
 import https from 'node:https';
 
-import { app, pool, db } from './app.js';
+import { app } from './app.js';
 import { setupWebsocket } from './lib/postbase/websocket.js';
 
 const httpsOptions = {
@@ -17,4 +17,4 @@ const server = https.createServer(httpsOptions, app);
 server.listen(HTTPS_PORT,
     () => console.log(`Postbase backend listening on https://0.0.0.0:${HTTPS_PORT}`));
 
-const wss = setupWebsocket({ pool, db, server });
+const wss = setupWebsocket({ server });
