@@ -1,12 +1,7 @@
 import { WebSocketServer } from 'ws';
 
-import { createPool } from './db.js';
+import { pool } from './db.js';
 import { makePostbaseAdminClient } from './adminClient.js';
-
-// FIXME: should not need to create a pool and db just to use db.buildWhere and db.buildOrder
-const pool = createPool({
-    connectionString: process.env.DATABASE_URL
-});
 
 const db = makePostbaseAdminClient({ pool });
 

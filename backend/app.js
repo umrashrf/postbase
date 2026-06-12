@@ -4,7 +4,7 @@ import { WebSocketServer } from 'ws';
 import { toNodeHandler } from "better-auth/node";
 
 // TODO: npm install @postbase/server and replace with @postbase/server/..
-import { createPool } from './lib/postbase/db.js';
+import { pool } from './lib/postbase/db.js';
 import { makeGenericRouter } from './lib/postbase/genericRouter.js';
 import { createStorageRouter } from './lib/postbase/storage.js';
 import { createLocalStorage } from './lib/postbase/local-storage.js';
@@ -19,12 +19,6 @@ import { auth } from './auth.js';
 
 const POSTBASE_STORAGE_ROOT_DIR = process.env.POSTBASE_STORAGE_ROOT_DIR || '/var/www/html/www.yourwebsite.com/uploads';
 const POSTBASE_STORAGE_PUBLIC_URL = process.env.POSTBASE_STORAGE_PUBLIC_URL || 'http://localhost:5173/uploads';
-
-
-// Initialize DB pool using env variables
-const pool = createPool({
-    connectionString: process.env.DATABASE_URL
-});
 
 // This is firestore alternative
 //const db = makePostbaseAdminClient({ pool });

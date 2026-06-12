@@ -1,10 +1,9 @@
 // db.js
 import { Pool } from 'pg';
 
-export function createPool(opts = {}) {
-    const pool = new Pool(opts);
-    return pool;
-}
+export const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+});
 
 export async function runQuery(pool, text, params = []) {
     const client = await pool.connect();
