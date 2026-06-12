@@ -1,8 +1,13 @@
-import { betterAuth as externalBetterAuth } from "better-auth";
+import { betterAuth } from "better-auth";
 import { admin } from "better-auth/plugins"
+import { pool } from "./app.js";
 //import { phoneNumber } from "better-auth/plugins"
+//import { makePostbaseAdminClient } from "./lib/postbase/adminClient.js";
 
-export const betterAuth = (props) => externalBetterAuth({
+// Enable if required
+//const db = makePostbaseAdminClient({ pool });
+
+export const auth = betterAuth({
     // Following is only needed for local testing
     // You can avoid this by using /etc/hosts and nginx servers
     // baseURL: 'http://localhost:8081',
@@ -18,7 +23,7 @@ export const betterAuth = (props) => externalBetterAuth({
     //         domain: "localhost",
     //     },
     // },
-    ...props,
+    database: pool,
     emailAndPassword: {
         enabled: true,
         sendResetPassword: async ({ user, url, token }, request) => {
@@ -79,5 +84,5 @@ export const betterAuth = (props) => externalBetterAuth({
         //         // Implement sending OTP code via SMS
         //     }
         // })
-    ],
+    ]
 });
