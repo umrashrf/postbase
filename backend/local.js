@@ -1,7 +1,7 @@
 import './env.js'; // for loading .env file
 import http from 'node:http';
 import { setupWebsocket } from './lib/postbase/websocket.js';
-import { app } from "./src/app.js";
+import { app } from "./app.js";
 
 const HTTPS_PORT = process.env.POSTBASE_BACKEND_HTTP_PORT || 8081;
 
