@@ -110,7 +110,7 @@ export function createAuthClient(betterAuthClient) {
             window.sessionStorage.removeItem('authToken');
         }
         // at the end because it can trigger navigation
-        betterAuthClient.signOut.apply(this, ...args);
+        betterAuthClient.signOut(...args);
     }
 
     // Return wrapped client with added helpers and dynamic currentUser getter
