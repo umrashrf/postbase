@@ -10,5 +10,5 @@ const server = http.createServer({}, app);
 setupWebsocket({ server });
 
 server.listen(HTTPS_PORT,
-    () => console.log(`Postbase backend listening on https://0.0.0.0:${HTTPS_PORT}`));
+    () => console.log(`Postbase backend listening on http://0.0.0.0:${HTTPS_PORT}`));
 
