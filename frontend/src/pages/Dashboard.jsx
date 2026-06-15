@@ -15,6 +15,10 @@ export default function Dashboard({ user }) {
             <div className="mt-2">
                 <button className="w-full bg-red-600 text-white py-2 rounded cursor-pointer"
                     onClick={async e => {
+                        const authToken = window.sessionStorage.getItem('authToken');
+                        if (authToken) {
+                            window.sessionStorage.removeItem('authToken');
+                        }
                         await betterAuthClient.deleteUser();
                         location.href = '/';
                     }}>Close Account</button>
