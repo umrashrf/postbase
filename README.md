@@ -99,6 +99,10 @@ Special thanks to [@better-auth/better-auth](https://github.com/better-auth/bett
 
 ![email.riamu.io](https://github.com/umrashrf/postbase/blob/main/assets/img/websites-made-with-postbase/email.riamu.io.png?raw=1)
 
+### 5. [openspend.riamu.io](https://openspend.riamu.io)
+
+![openspend.riamu.io](https://github.com/umrashrf/postbase/blob/main/assets/img/websites-made-with-postbase/OpenSpend.riamu.io.png?raw=1)
+
 ## Disclaimer !!!
 
 Brand new project launched 02 Nov 2025, this is boiler plate but working! Expect heavy changes coming every few hours until stable
