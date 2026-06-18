@@ -27,6 +27,7 @@ Demo Preact app is included !
       * [2. <a href="https://www.mamiride.com" rel="nofollow">Mamiride.com</a>](https://www.mamiride.com)
       * [3. <a href="https://www.provitres.ca" rel="nofollow">Provitres.ca</a>](https://www.provitres.ca)
       * [4. <a href="https://email.riamu.io" rel="nofollow">email.riamu.io</a>](https://email.riamu.io)
+      * [5. <a href="https://openspend.riamu.io" rel="nofollow">OpenSpend.riamu.io</a>](https://openspend.riamu.io)
    * [Disclaimer !!!](#disclaimer-)
    * [Getting Started](#getting-started)
    * [Vision](#vision)
