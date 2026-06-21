@@ -20,7 +20,7 @@ beforeAll(async () => {
         ]
     });
 
-    const auth = createAuthClient(betterAuthClient);
+    const auth = createAuthClient(betterAuthClient, false);
 
     client = new RtdbClient({
         restUrl: srv.url,

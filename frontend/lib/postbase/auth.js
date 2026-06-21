@@ -5,7 +5,7 @@
  * - getIdToken()
  * - currentUser
  */
-export function createAuthClient(betterAuthClient) {
+export function createAuthClient(betterAuthClient, poll = true) {
     // Track current user state
     let currentUser = null;
     const subscribers = new Set();
@@ -43,7 +43,9 @@ export function createAuthClient(betterAuthClient) {
 
     // Simple polling loop (every 5 seconds by default)
     const POLL_INTERVAL = 5000;
-    let pollTimer = setInterval(checkSession, POLL_INTERVAL);
+    let pollTimer;
+    if (poll) pollTimer = setInterval(checkSession, POLL_INTERVAL);
+
 
     /**
      * Adds a listener for auth state changes.
