@@ -189,7 +189,11 @@ export function makePostbaseAdminClient({ pool }) {
                 }
                 let sqlOp = op === "==" ? "=" : op;
                 if (value === null) {
-                    whereClauses.push(`${_field} IS NULL`);
+                    if (op === '!=') {
+                        whereClauses.push(`${_field} IS NOT NULL`);
+                    } else {
+                        whereClauses.push(`${_field} IS NULL`);
+                    }
                 } else {
                     params.push(value);
                     whereClauses.push(`${_field} ${sqlOp} $${idx++}`);
