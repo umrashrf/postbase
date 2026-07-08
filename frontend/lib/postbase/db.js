@@ -556,7 +556,10 @@ class QueryBuilder {
             //console.log('ws.onclose', event);
         };
 
-        return () => ws.close(); // return unsubscribe function
+        // return unsubscribe function
+        return () => {
+            if (ws.readyState === WebSocket.OPEN) ws.close();
+        }
     }
 
     mergeFrom(other) {
