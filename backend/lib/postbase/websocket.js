@@ -72,6 +72,8 @@ export function setupWebsocket({ server }) {
 
                 ws.query = query;
 
+                // FIXME: add auth and permission evaluator
+
                 const { filters = [], order = [], limit = 100, offset = 0 } = query;
 
                 // Send initial data
