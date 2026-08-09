@@ -22,22 +22,28 @@ export function createAuthClient(betterAuthClient, poll = true) {
 
     // Poll for session changes (adjust interval as needed)
     async function checkSession() {
+        let newUser = null;
         try {
-            const { data } = await betterAuthClient.getSession();
-            const newUser = data?.user ?? null;
-            if (newUser) {
-                newUser.uid = newUser.id;
-            }
-
-            if (JSON.stringify(newUser) !== JSON.stringify(currentUser)) {
-                currentUser = newUser;
-                if (currentUser) {
-                    currentUser.getIdToken = getIdToken;
-                }
-                notifySubscribers(currentUser);
-            }
+            const { data } = await auth.getSession();
+            newUser = data?.user ?? null;
         } catch (err) {
             console.error("Error checking session:", err);
+        }
+
+        if (newUser) {
+            newUser.uid = newUser.id;
+
+            try {
+                if (JSON.stringify(newUser) !== JSON.stringify(currentUser)) {
+                    currentUser = newUser;
+                    if (currentUser) {
+                        currentUser.getIdToken = getIdToken;
+                    }
+                    notifySubscribers(currentUser);
+                }
+            } catch (err) {
+                console.error("Error notifying auth subscribers:", err);
+            }
         }
     }
 
