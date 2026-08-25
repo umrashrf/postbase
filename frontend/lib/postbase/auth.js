@@ -5,7 +5,12 @@
  * - getIdToken()
  * - currentUser
  */
-export function createAuthClient(betterAuthClient, poll = true) {
+export function createAuthClient(
+    betterAuthClient,
+    poll = !!( // only poll on client side because ssr is also calling this function on server side
+        (typeof window !== 'undefined' &&
+            window.document && window.document.createElement)
+    )) {
     // Track current user state
     let currentUser = null;
     const subscribers = new Set();
