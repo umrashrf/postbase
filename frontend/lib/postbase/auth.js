@@ -24,7 +24,7 @@ export function createAuthClient(betterAuthClient, poll = true) {
     async function checkSession() {
         let newUser = null;
         try {
-            const { data } = await auth.getSession();
+            const { data } = await betterAuthClient.getSession();
             newUser = data?.user ?? null;
         } catch (err) {
             console.error("Error checking session:", err);
