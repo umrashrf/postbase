@@ -50,10 +50,6 @@ export function makeEvaluator(rulesModule = {}) {
  */
 export const RuleHelpers = {
     isAuth: (request) => !!request.auth,
-    isOwner: (request, response) => request.auth.id === String(response?.id),
-    isAdmin: (request) => request.user?.role === "admin"
-        || (process.env.hasOwnProperty("VITE_BRAND_ID_USD") && request.auth.id === process.env.VITE_BRAND_ID_USD)
-        || (process.env.hasOwnProperty("VITE_BRAND_ID_CAD") && request.auth.id === process.env.VITE_BRAND_ID_CAD),
     uidEquals: (request, propOrValue) => {
         if (!request.auth) return false;
         // propOrValue can be a function(resource) or a string path
