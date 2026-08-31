@@ -50,6 +50,9 @@ export function makeEvaluator(rulesModule = {}) {
  */
 export const RuleHelpers = {
     isAuth: (request) => !!request.auth,
+    isOwner: (request, response) => request.auth.id === String(response?.id),
+    isAdmin: (request) => request.user?.role === "admin"
+        || (process.env.hasOwnProperty("ADMIN_USER_ID") && request.auth.id === process.env.ADMIN_USER_ID),
     uidEquals: (request, propOrValue) => {
         if (!request.auth) return false;
         // propOrValue can be a function(resource) or a string path
