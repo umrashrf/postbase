@@ -2,9 +2,63 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Deploy to Prod",
+            "label": "Push to Prod",
             "type": "shell",
             "command": "git push deploy",
+            "problemMatcher": [],
+            "presentation": {
+                "echo": false,
+                "reveal": "silent",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": false,
+                "close": true,
+            }
+        },
+        {
+            "label": "Deploy Backend",
+            "type": "shell",
+            "command": "ssh server@domain.com \"/home/server/your_repo/bin/deploy/prod/backend.sh\"",
+            "dependsOn": [
+                "Push to Prod"
+            ],
+            "problemMatcher": [],
+            "presentation": {
+                "echo": false,
+                "reveal": "silent",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": false,
+                "close": true,
+            }
+        },
+        {
+            "label": "Deploy Frontend",
+            "type": "shell",
+            "command": "ssh server@domain.com \"/home/server/your_repo/bin/deploy/prod/frontend.sh\"",
+            "dependsOn": [
+                "Push to Prod"
+            ],
+            "problemMatcher": [],
+            "presentation": {
+                "echo": false,
+                "reveal": "silent",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": false,
+                "close": true,
+            }
+        },
+        {
+            "label": "Deploy Admin",
+            "type": "shell",
+            "command": "ssh server@domain.com \"/home/server/your_repo/bin/deploy/prod/admin.sh\"",
+            "dependsOn": [
+                "Push to Prod"
+            ],
             "problemMatcher": [],
             "presentation": {
                 "echo": false,
