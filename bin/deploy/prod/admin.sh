@@ -15,7 +15,7 @@ cd $GIT_WORK_TREE
 git checkout .
 
 cd admin
-npm install
+npm install --production
 npm run build
 
 rsync -avh /home/server/you_repo/admin/dist/ /var/www/html/you_repo/admin

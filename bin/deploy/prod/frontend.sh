@@ -15,7 +15,7 @@ cd $GIT_WORK_TREE
 git checkout .
 
 cd frontend
-npm install
+npm install --production
 npm run build
 
 rsync -avh /your/server/your_repo/frontend/dist/ /var/www/html/your_website

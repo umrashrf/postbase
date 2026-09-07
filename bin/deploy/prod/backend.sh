@@ -15,6 +15,6 @@ cd $GIT_WORK_TREE
 git checkout .
 
 cd backend
-npm install
+npm install --production
 
 # ssh server@domain.com "/your/server/your_repo/bin/deploy/prod/backend.sh"
