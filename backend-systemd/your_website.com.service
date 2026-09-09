@@ -3,7 +3,7 @@ Description=your_website.com
 After=network.target
 
 [Service]
-ExecStart=/path/to/bin/node main.js
+ExecStart=/path/to/bin/node local.js
 Restart=always
 User=your_username
 WorkingDirectory=/home/your_username/my-app-directory/
