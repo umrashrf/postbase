@@ -59,5 +59,31 @@ router.use(
 //     methods: ["GET", "POST", "PUT", "DELETE"],
 //     credentials: true,
 // }));
+
 app.use(express.json());
+
+app.use((req, res, next) => {
+    let ip;
+    try {
+        ip = req.ip || req.headers['x-real-ip'] || req.connection.remoteAddress;
+    } catch (err) {
+        ip = '';
+    }
+
+    const start = process.hrtime.bigint();
+
+    res.on("finish", () => {
+        const elapsedMs = Number(process.hrtime.bigint() - start) / 1e6;
+
+        const duration =
+            elapsedMs < 1000
+                ? `${elapsedMs.toFixed(2)} ms`
+                : `${(elapsedMs / 1000).toFixed(2)} s`;
+
+        console.log(`${ip} - ${req.method} ${req.url} - ${duration} - Body:`, JSON.stringify(req.body));
+    });
+
+    next();
+});
+
 app.use('/api', router);
