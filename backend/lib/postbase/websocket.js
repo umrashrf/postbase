@@ -110,9 +110,12 @@ export function setupWebsocket({ server }) {
                 if (!payload.data?.parent?.path) return;
                 if (payload.data.parent.path !== parentFilter.value.path) return;
             }
-            if (ws.query?.filters?.some(f => f.field === '__id' && f.op === '==' && payload.data.id === f.value)) {
-            } else {
-                return;
+            const idFilters = ws.query?.filters.filter(f => f.field === '__id');
+            if (idFilters.length > 0) {
+                if (ws.query?.filters?.some(f => f.field === '__id' && f.op === '==' && payload.data.id === f.value)) {
+                } else {
+                    return;
+                }
             }
             console.log('Sending change event to the client with payload');
             ws.send(JSON.stringify({ type: 'change', data: payload }));
