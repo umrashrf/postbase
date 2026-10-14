@@ -10,6 +10,8 @@
 // const userRef = db.collection('users').doc('alovelace');
 // await userRef.set({ name: 'Ada Lovelace' });
 
+import { Transaction } from "./transaction";
+
 // await db.collection('reviews').doc('r1').set({
 //   rating: 5,
 //   reviewer: userRef
@@ -59,7 +61,16 @@ class Database {
         }
         return headers;
     }
+
+    async runTransaction(callback) {
+        const tx = new Transaction(this);
+
+        await callback(tx);
+
+        return tx.commit();
+    }
 }
+
 
 class CollectionReference {
     constructor(db, name, parentPath = null) {
@@ -323,7 +334,9 @@ class DocumentReference {
 
     onSnapshot(callback, errorCallback) {
         // Reuse the existing real-time query system
-        const q = new QueryBuilder(this.collection(this.id));
+        const base = this.parentPath ? `${this.parentPath}/${encodeURIComponent(this.collectionName)}` : encodeURIComponent(this.collectionName);
+        const coll = new CollectionReference(this.db, base);
+        const q = new QueryBuilder(coll);
         q._filters.push({ field: "__id", op: "==", value: this.id });
 
         return q.onSnapshot((querySnap) => {
