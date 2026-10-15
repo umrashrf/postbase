@@ -210,9 +210,16 @@ export function makePostbaseAdminClient({ pool }) {
     // === ORDER builder ===
     function buildOrder(order = []) {
         if (!order.length) return '';
-        const parts = order.map(({ field, dir }) =>
-            `data->>'${field}' ${dir?.toLowerCase() === 'desc' ? 'DESC' : 'ASC'}`
-        );
+        const parts = [];
+        for (const o of order) {
+            const { field, dir } = o;
+            let d = (dir || 'asc').toLowerCase().startsWith('desc') ? 'DESC' : 'ASC';
+            const remainingPart = (dir || 'asc').toLowerCase().replace('desc', '').replace('asc', '').trim();
+            if (remainingPart.length > 0) {
+                d += ' ' + remainingPart.toUpperCase();
+            }
+            parts.push(`data->>'${field}' ${d}`);
+        }
         return parts.length ? `ORDER BY ${parts.join(', ')}` : '';
     }
 
