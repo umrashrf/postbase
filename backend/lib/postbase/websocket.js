@@ -104,17 +104,33 @@ export function setupWebsocket({ server }) {
             if (ws.readyState !== WebSocket.OPEN) return;
             const payload = JSON.parse(msg.payload);
             console.log('payload from postgres', payload);
+            console.log('ws.query?.filters', ws.query?.filters);
             // Only send relevant changes for this subcollection parent
-            if (ws.query?.filters?.some(f => f.field === 'parent' && f.value?.path)) {
-                const parentFilter = ws.query.filters.find(f => f.field === 'parent');
-                if (!payload.data?.parent?.path) return;
-                if (payload.data.parent.path !== parentFilter.value.path) return;
-            }
-            const idFilters = ws.query?.filters.filter(f => f.field === '__id');
-            if (idFilters.length > 0) {
-                if (ws.query?.filters?.some(f => f.field === '__id' && f.op === '==' && payload.data.id === f.value)) {
-                } else {
-                    return;
+            for (let filter of ws.query?.filters) {
+                if (filter.field === '__id') {
+                    if (payload.data.hasOwnProperty('id') && filter.hasOwnProperty('value')) {
+                        if (payload.data.id !== filter.value) return;
+                    }
+                }
+                if (payload.data.hasOwnProperty(filter.field)) {
+                    const payloadChild = payload.data[filter.field];
+                    console.log('payload child', payloadChild);
+                    if (payloadChild instanceof Array) {
+                        if (payloadChild.length === 0) {
+                            console.warn(`No values ${filter.field} found`);
+                        } else {
+                            if (filter.hasOwnProperty('value') && filter.value.hasOwnProperty('path')) {
+                                // if none of the user given by filter.value.path are in users[] array, abort
+                                if (payloadChild.filter(child => child.path === filter.value.path).length === 0) return;
+                            }
+                        }
+                    } else {
+                        if (payloadChild.hasOwnProperty('path') && filter.hasOwnProperty('value') && filter.value.hasOwnProperty('path')) {
+                            if (payloadChild.path !== filter.value.path) return;
+                        } else if (payloadChild.hasOwnProperty('id') && filter.hasOwnProperty('value') && filter.value.hasOwnProperty('id')) {
+                            if (payloadChild.id !== filter.value.id) return;
+                        }
+                    }
                 }
             }
             console.log('Sending change event to the client with payload');
