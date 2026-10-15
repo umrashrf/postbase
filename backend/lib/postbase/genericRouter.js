@@ -169,7 +169,7 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
         const parts = [];
         for (const o of order) {
             const { field, dir } = o;
-            const d = (dir || 'asc').toLowerCase() === 'desc' ? 'DESC' : 'ASC';
+            const d = (dir || 'asc').toLowerCase().startsWith('desc') ? 'DESC' : 'ASC';
             parts.push(`data->>'${field}' ${d}`);
         }
         return parts.length ? `ORDER BY ${parts.join(', ')}` : '';
