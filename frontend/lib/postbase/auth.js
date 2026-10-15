@@ -1,3 +1,5 @@
+import { db } from "../../src/postbase";
+
 /**
  * A wrapper around better-auth/client's createAuthClient
  * that adds Firebase-like helpers:
@@ -12,6 +14,7 @@ export function createAuthClient(
             window.document && window.document.createElement)
     )) {
     // Track current user state
+    let notifier = null;
     let currentUser = null;
     const subscribers = new Set();
 
@@ -38,13 +41,55 @@ export function createAuthClient(
         if (newUser) {
             newUser.uid = newUser.id;
 
+            let called = false;
+
+            if (!notifier) {
+                if (!poll) {
+                    clearInterval(pollTimer);
+                    pollTimer = null;
+                }
+                notifier = db
+                    .collection('users')
+                    .doc(newUser.id)
+                    .onSnapshot(doc => {
+                        if (!doc) return;
+
+                        // this will run each time there is update on user
+                        const userObj = {
+                            id: doc.id,
+                            uid: doc.id,
+                            ...doc.data(),
+                        };
+                        if (!userObj.hasOwnProperty('emailVerified')) {
+                            if (currentUser) {
+                                userObj.emailVerified = currentUser?.emailVerified;
+                            } else if (newUser) {
+                                userObj.emailVerified = newUser?.emailVerified;
+                            }
+                        }
+                        notifySubscribers(userObj);
+                        called = true;
+                    }, err => {
+                        console.error('users snapshot wasn\'t setup', err);
+                    });
+            }
+
             try {
                 if (JSON.stringify(newUser) !== JSON.stringify(currentUser)) {
                     currentUser = newUser;
                     if (currentUser) {
                         currentUser.getIdToken = getIdToken;
                     }
-                    notifySubscribers(currentUser);
+                    if (poll) {
+                        notifySubscribers(currentUser);
+                    } else {
+                        setTimeout(() => {
+                            if (!called) {
+                                notifySubscribers(currentUser);
+                                called = true;
+                            }
+                        }, 2000);
+                    }
                 }
             } catch (err) {
                 console.error("Error notifying auth subscribers:", err);
@@ -55,8 +100,7 @@ export function createAuthClient(
     // Simple polling loop (every 5 seconds by default)
     const POLL_INTERVAL = 5000;
     let pollTimer;
-    if (poll) pollTimer = setInterval(checkSession, POLL_INTERVAL);
-
+    if (poll || !notifier) pollTimer = setInterval(checkSession, POLL_INTERVAL);
 
     /**
      * Adds a listener for auth state changes.
@@ -87,8 +131,14 @@ export function createAuthClient(
         return () => {
             subscribers.delete(callback);
             if (subscribers.size === 0) {
-                clearInterval(pollTimer);
-                pollTimer = null;
+                if (poll) {
+                    clearInterval(pollTimer);
+                    pollTimer = null;
+                }
+                if (notifier) {
+                    notifier(); // unsubscribe/close websocket
+                    notifier = null;
+                }
             }
         };
     }
