@@ -119,13 +119,13 @@ export function setupWebsocket({ server }) {
                         if (payloadChild.length === 0) {
                             console.warn(`No values ${filter.field} found`);
                         } else {
-                            if (filter.hasOwnProperty('value') && filter.value.hasOwnProperty('path')) {
+                            if (filter.hasOwnProperty('value') && filter?.value && filter.value.hasOwnProperty('path')) {
                                 // if none of the user given by filter.value.path are in users[] array, abort
                                 if (payloadChild.filter(child => child.path === filter.value.path).length === 0) return;
                             }
                         }
                     } else {
-                        if (payloadChild.hasOwnProperty('path') && filter.hasOwnProperty('value') && filter.value.hasOwnProperty('path')) {
+                        if (payloadChild.hasOwnProperty('path') && filter.hasOwnProperty('value') && filter?.value && filter.value.hasOwnProperty('path')) {
                             if (payloadChild.path !== filter.value.path) return;
                         } else if (payloadChild.hasOwnProperty('id') && filter.hasOwnProperty('value') && filter.value.hasOwnProperty('id')) {
                             if (payloadChild.id !== filter.value.id) return;
