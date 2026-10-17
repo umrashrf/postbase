@@ -1,5 +1,3 @@
-import { db } from "../../src/postbase";
-
 /**
  * A wrapper around better-auth/client's createAuthClient
  * that adds Firebase-like helpers:
@@ -14,9 +12,14 @@ export function createAuthClient(
             window.document && window.document.createElement)
     )) {
     // Track current user state
+    let db = null;
     let notifier = null;
     let currentUser = null;
     const subscribers = new Set();
+
+    function setDB(dbRef) {
+        db = dbRef;
+    }
 
     function notifySubscribers(user) {
         for (const cb of subscribers) {
@@ -48,30 +51,32 @@ export function createAuthClient(
                     clearInterval(pollTimer);
                     pollTimer = null;
                 }
-                notifier = db
-                    .collection('users')
-                    .doc(newUser.id)
-                    .onSnapshot(doc => {
-                        if (!doc) return;
+                if (db) {
+                    notifier = db
+                        .collection('users')
+                        .doc(newUser.id)
+                        .onSnapshot(doc => {
+                            if (!doc) return;
 
-                        // this will run each time there is update on user
-                        const userObj = {
-                            id: doc.id,
-                            uid: doc.id,
-                            ...doc.data(),
-                        };
-                        if (!userObj.hasOwnProperty('emailVerified')) {
-                            if (currentUser) {
-                                userObj.emailVerified = currentUser?.emailVerified;
-                            } else if (newUser) {
-                                userObj.emailVerified = newUser?.emailVerified;
+                            // this will run each time there is update on user
+                            const userObj = {
+                                id: doc.id,
+                                uid: doc.id,
+                                ...doc.data(),
+                            };
+                            if (!userObj.hasOwnProperty('emailVerified')) {
+                                if (currentUser) {
+                                    userObj.emailVerified = currentUser?.emailVerified;
+                                } else if (newUser) {
+                                    userObj.emailVerified = newUser?.emailVerified;
+                                }
                             }
-                        }
-                        notifySubscribers(userObj);
-                        called = true;
-                    }, err => {
-                        console.error('users snapshot wasn\'t setup', err);
-                    });
+                            notifySubscribers(userObj);
+                            called = true;
+                        }, err => {
+                            console.error('users snapshot wasn\'t setup', err);
+                        });
+                }
             }
 
             try {
@@ -188,6 +193,7 @@ export function createAuthClient(
             return currentUser;
         },
 
+        setDB,
         onAuthStateChanged,
         getBetterAuthToken,
         signOut,
