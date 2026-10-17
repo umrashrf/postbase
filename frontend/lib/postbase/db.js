@@ -10,8 +10,6 @@
 // const userRef = db.collection('users').doc('alovelace');
 // await userRef.set({ name: 'Ada Lovelace' });
 
-import { Transaction } from "./transaction";
-
 // await db.collection('reviews').doc('r1').set({
 //   rating: 5,
 //   reviewer: userRef
@@ -60,14 +58,6 @@ class Database {
             }
         }
         return headers;
-    }
-
-    async runTransaction(callback) {
-        const tx = new Transaction(this);
-
-        await callback(tx);
-
-        return tx.commit();
     }
 }
 
