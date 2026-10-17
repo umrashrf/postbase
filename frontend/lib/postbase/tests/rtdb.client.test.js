@@ -6,6 +6,7 @@ import { startTestServer } from '../../../../backend/lib/postbase/tests/testServ
 import { RtdbClient } from '../rtdb';
 import { delay } from '../utils.js';
 import { createAuthClient } from '../auth';
+import { getDB } from '../db';
 
 let srv;
 let client;
@@ -21,6 +22,13 @@ beforeAll(async () => {
     });
 
     const auth = createAuthClient(betterAuthClient, false);
+
+    const db = getDB({
+        baseUrl: srv.url + '/db',
+        getAuthToken: auth.getBetterAuthToken,
+    });
+
+    auth.setDB(db);
 
     client = new RtdbClient({
         restUrl: srv.url,
