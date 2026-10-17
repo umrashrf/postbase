@@ -37,7 +37,7 @@ export const logout = async (...args) => {
 
 // firebase auth
 export const getAuth = () => postbaseAuthClient;
-export const { getBetterAuthToken, onAuthStateChanged } = postbaseAuthClient;
+export const { setDB, getBetterAuthToken, onAuthStateChanged } = postbaseAuthClient;
 
 export const {
     createUserWithEmailAndPassword,

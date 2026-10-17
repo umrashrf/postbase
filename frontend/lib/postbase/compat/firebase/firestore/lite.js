@@ -1,12 +1,14 @@
-import { getBetterAuthToken } from "../../../../../src/auth";
+import { setDB, getBetterAuthToken } from "../../../../../src/auth";
 import { getDB } from "../../../db";
 
 export function getFirestore(app) {
     // app is just {} having baseUrl and getAuthToken
-    return getDB({
+    const dbRef = getDB({
         baseUrl: app.baseUrl + '/db',
         getAuthToken: getBetterAuthToken,
     });
+    setDB(dbRef); // Need that for auth to listen for user chanced
+    return dbRef;
 }
 
 export function collection(db, collectionName) {
