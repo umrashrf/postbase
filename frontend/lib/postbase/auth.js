@@ -19,6 +19,7 @@ export function createAuthClient(
 
     function setDB(dbRef) {
         db = dbRef;
+        checkSession();
     }
 
     function notifySubscribers(user) {
@@ -41,13 +42,21 @@ export function createAuthClient(
             console.error("Error checking session:", err);
         }
 
-        if (newUser) {
+        // if user is not logged in
+        if (!newUser) {
+            if (!poll && pollTimer) {
+                clearInterval(pollTimer);
+                pollTimer = null;
+            }
+        } else {
+            // if user is logged in
+
             newUser.uid = newUser.id;
 
             let called = false;
 
             if (!notifier) {
-                if (!poll) {
+                if (!poll && pollTimer) {
                     clearInterval(pollTimer);
                     pollTimer = null;
                 }
@@ -64,6 +73,13 @@ export function createAuthClient(
                                 uid: doc.id,
                                 ...doc.data(),
                             };
+                            if (!userObj.hasOwnProperty('name')) {
+                                if (currentUser) {
+                                    userObj.name = currentUser?.firstName + ' ' + currentUser?.lastName;
+                                } else if (newUser) {
+                                    userObj.name = newUser?.firstName + ' ' + currentUser?.lastName;
+                                }
+                            }
                             if (!userObj.hasOwnProperty('emailVerified')) {
                                 if (currentUser) {
                                     userObj.emailVerified = currentUser?.emailVerified;
@@ -103,7 +119,7 @@ export function createAuthClient(
     }
 
     // Simple polling loop (every 5 seconds by default)
-    const POLL_INTERVAL = 5000;
+    const POLL_INTERVAL = 2000;
     let pollTimer;
     if (poll || !notifier) pollTimer = setInterval(checkSession, POLL_INTERVAL);
 
