@@ -281,17 +281,12 @@ class DocumentReference {
         const url = `${this.db.baseUrl}/${this.fullPath}`;
         const headers = await this.db.getHeaders();
 
-        // If merge=true, fetch existing data first and merge locally
-        let finalData = data;
-        if (opts.merge) {
-            try {
-                const existing = await this.get();
-                finalData = { ...(existing.data() || {}), ...data };
-            } catch (err) {
-                // If doc doesn't exist, just create it
-                finalData = data;
-            }
-        }
+        const finalData = {
+            options: {
+                merge: opts?.merge || false,
+            },
+            data,
+        };
 
         const res = await fetch(url, {
             method: 'PUT',

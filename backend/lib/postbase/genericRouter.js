@@ -308,15 +308,26 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
     router.put('/:table/:id', async (req, res) => {
         const table = req.params.table;
         const id = req.params.id;
-        try {
-            const existing = await runQuery(pool, `SELECT data FROM "${table}" WHERE id=$1 LIMIT 1`, [id]);
-            const raw = req.body || {};
 
-            let current = raw;
-            if (existing.rowCount) {
+        const body = req?.body || {};
+        const opts = body?.options || {};
+        const raw = body?.data || {};
+        let current = raw;
+        current.id = id; // for rules engine     
+
+        const client = await pool.connect();
+
+        try {
+            await client.query('BEGIN');
+
+            const existing = await client.query(
+                `SELECT data FROM "${table}" WHERE id=$1 LIMIT 1`,
+                [id]
+            );
+
+            if (existing.rowCount && opts?.merge) {
                 current = existing.rows[0].data;
             }
-            current.id = id; // for rules engine
 
             const payload = applyFieldValues(current, raw);
 
@@ -339,12 +350,27 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
                     RETURNING id, data, created_at, updated_at`;
             }
 
-            const result = await runQuery(pool, sql, [payload, id]);
+            const result = await client.query(sql, [payload, id]);
+
+            await client.query('COMMIT');
+
             const row = result.rows[0];
             res.json({ data: { id: row.id, ...row.data } });
         } catch (err) {
+            try {
+                await client.query('ROLLBACK');
+            } catch {
+                // Rollback failed; release with the error so the pool can discard
+                // the connection rather than reuse one in an uncertain state.
+                client.release(err);
+                throw err;
+            }
+
             console.error(err);
             res.status(400).json({ error: "Internal Error Occurred" });
+        } finally {
+            // Avoid releasing twice if the rollback-failure path already did.
+            if (!client.released) client.release();
         }
     });
 
