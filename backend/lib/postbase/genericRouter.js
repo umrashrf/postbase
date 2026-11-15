@@ -326,7 +326,11 @@ export function makeGenericRouter({ pool, rulesModule, authField = 'auth' }) {
             );
 
             if (existing.rowCount && opts?.merge) {
-                current = existing.rows[0].data;
+                const root = existing.rows[0];
+                current = root.data;
+                if (root.hasOwnProperty('id')) {
+                    current.id = root.id;
+                }
             }
 
             const payload = applyFieldValues(current, raw);
