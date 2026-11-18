@@ -27,7 +27,7 @@ Demo Preact app is included !
       * [2. <a href="https://www.mamiride.com" rel="nofollow">Mamiride.com</a>](https://www.mamiride.com)
       * [3. <a href="https://www.provitres.ca" rel="nofollow">Provitres.ca</a>](https://www.provitres.ca)
       * [4. <a href="https://email.riamu.io" rel="nofollow">email.riamu.io</a>](https://email.riamu.io)
-      * [5. <a href="https://openspend.riamu.io" rel="nofollow">OpenSpend.riamu.io</a>](https://openspend.riamu.io)
+      * [5. <a href="https://www.openspend.net" rel="nofollow">OpenSpend.net</a>](https://www.openspend.net)
    * [Disclaimer !!!](#disclaimer-)
    * [Getting Started](#getting-started)
    * [Vision](#vision)
@@ -100,9 +100,9 @@ Special thanks to [@better-auth/better-auth](https://github.com/better-auth/bett
 
 ![email.riamu.io](https://github.com/umrashrf/postbase/blob/main/assets/img/websites-made-with-postbase/email.riamu.io.png?raw=1)
 
-### 5. [OpenSpend.riamu.io](https://openspend.riamu.io)
+### 5. [OpenSpend.net](https://www.openspend.net)
 
-![openspend.riamu.io](https://github.com/umrashrf/postbase/blob/main/assets/img/websites-made-with-postbase/OpenSpend.riamu.io.png?raw=1)
+![openspend.net](https://github.com/umrashrf/postbase/blob/main/assets/img/websites-made-with-postbase/OpenSpend.net.png?raw=1)
 
 ## Disclaimer !!!
 
